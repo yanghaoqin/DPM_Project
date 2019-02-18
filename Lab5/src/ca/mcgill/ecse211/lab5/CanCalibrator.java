@@ -9,9 +9,9 @@ public class CanCalibrator {
   private float[] lightData;
   private SampleProvider lightColor;
   private float filterSum;
-  private final int RED = 0;
-  private final int GREEN = 1;
-  private final int BLUE = 2;
+  private final int RED_INDEX = 0;
+  private final int GREEN_INDEX = 1;
+  private final int BLUE_INDEX = 2;
   private final int SCAN_TIME = 100;
   private final int SCAN_LENGTH = 100;
 
@@ -34,24 +34,24 @@ public class CanCalibrator {
      * }
      */
     for (int i = 0; i < SCAN_TIME; i++) {
-      red_array[i] = initialReading(RED);
-      green_array[i] = initialReading(GREEN);
-      blue_array[i] = initialReading(BLUE);
+      red_array[i] = initialReading(RED_INDEX);
+      green_array[i] = initialReading(GREEN_INDEX);
+      blue_array[i] = initialReading(BLUE_INDEX);
     }
 
-    mean[0] = Find_Mean(red_array);
-    mean[1] = Find_Mean(green_array);
-    mean[2] = Find_Mean(blue_array);
+    mean[RED_INDEX] = Find_Mean(red_array);
+    mean[GREEN_INDEX] = Find_Mean(green_array);
+    mean[BLUE_INDEX] = Find_Mean(blue_array);
     
-    mean = Mean_Normalizer(mean[0], mean[1], mean[2]);
+    mean = Mean_Normalizer(mean[RED_INDEX], mean[GREEN_INDEX], mean[BLUE_INDEX]);
     
-    standard_deviation[0] = Find_Standard_Deviation(red_array, mean[0]);
-    standard_deviation[1] = Find_Standard_Deviation(green_array, mean[1]);
-    standard_deviation[2] = Find_Standard_Deviation(blue_array, mean[2]);
+    standard_deviation[RED_INDEX] = Find_Standard_Deviation(red_array, mean[RED_INDEX]);
+    standard_deviation[GREEN_INDEX] = Find_Standard_Deviation(green_array, mean[GREEN_INDEX]);
+    standard_deviation[BLUE_INDEX] = Find_Standard_Deviation(blue_array, mean[BLUE_INDEX]);
     
-    if(Compare_Standard_Deviation(target[0], standard_deviation[0], mean[0]) && 
-        Compare_Standard_Deviation(target[1], standard_deviation[1], mean[1]) &&
-        Compare_Standard_Deviation(target[2], standard_deviation[2], mean[2])) {
+    if(Compare_Standard_Deviation(target[RED_INDEX], standard_deviation[RED_INDEX], mean[RED_INDEX]) && 
+        Compare_Standard_Deviation(target[GREEN_INDEX], standard_deviation[GREEN_INDEX], mean[GREEN_INDEX]) &&
+        Compare_Standard_Deviation(target[BLUE_INDEX], standard_deviation[BLUE_INDEX], mean[BLUE_INDEX])) {
       Sound.beep();
       return true;
     }
@@ -88,7 +88,7 @@ public class CanCalibrator {
   }
 
   private boolean Compare_Standard_Deviation(double target, double strd_dev, double mean) {
-    if(Math.abs(mean - target) < 2 * strd_dev) {
+    if(Math.abs(mean - target) < Math.abs(mean - 2 * strd_dev)) {
       return true;
     }
     else {
@@ -111,5 +111,30 @@ public class CanCalibrator {
     }
     // take average of the standard
     return std /= 100.0;
+  }
+
+  /**
+   * This is a private method which functions as a mean or average filter. The filter ensures the
+   * correctness of the readings, filtering out the noise in the signal from the color sensor. The
+   * filter takes 5 readings and sums the amplified value of each reading.
+   * 
+   * @return returns the average of the amplified reading
+   */
+  private double meanFilter() {
+    filterSum = 0;
+    // take 5 readings
+    for (int i = 0; i < 5; i++) {
+
+      // acquire sample data and read into array with no offset
+      lightColor.fetchSample(lightData, 0);
+
+      // amplify signal for increased sensitivity
+      filterSum += lightData[0] * 100;
+
+    }
+
+    // return an amplified average
+    return filterSum / 5.0;
+
   }
 }
