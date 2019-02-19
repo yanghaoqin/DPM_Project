@@ -122,7 +122,6 @@ public class LightLocalizer extends Thread {
     travelTo(0, 0);
     turnTo(6);
 
-   //TODO: ADD STARTING CORNER SPECS
     switch(SC) { //depending on which corner we started on
       case 0: odometer.setXYT(1*TILE, 1*TILE, 0);
         break;
@@ -133,9 +132,9 @@ public class LightLocalizer extends Thread {
       case 3: odometer.setXYT(1*TILE, 7*TILE, 90);
     }
     
-    //TODO: GO TO LOWER LEFT OF SEARCHING AREA
     Navigation nav = new Navigation(odometer);
     nav.travelTo(LLx, LLy); //navigate to lower left of searching area
+    //TODO: tweak LLx and LLy
     Sound.beep(); //beep when at lower left corner
     
     

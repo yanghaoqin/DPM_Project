@@ -9,9 +9,12 @@ public class CanCalibrator {
   private float[] lightData;
   private SampleProvider lightColor;
   private float filterSum;
+  
+  //RGB indeces
   private final int RED_INDEX = 0;
   private final int GREEN_INDEX = 1;
   private final int BLUE_INDEX = 2;
+  
   private final int SCAN_TIME = 100;
   private final int SCAN_LENGTH = 100;
 
