@@ -5,42 +5,14 @@ import lejos.robotics.SampleProvider;
 
 public class CanCalibrator {
 
-  private double std;
-  private float[] lightData;
-  private SampleProvider lightColor;
-  private float filterSum;
-  
   //RGB indeces
   private final int RED_INDEX = 0;
   private final int GREEN_INDEX = 1;
   private final int BLUE_INDEX = 2;
   
-  private final int SCAN_TIME = 100;
-  private final int SCAN_LENGTH = 100;
-
-  public CanCalibrator(SampleProvider lightColor, float[] lightData) {
-    this.lightData = lightData;
-    this.lightColor = lightColor;
-    this.std = 0;
-  }
-
-
-  private boolean Calibrate(double[] target, boolean stop) {
-    double[] red_array = new double[SCAN_LENGTH];
-    double[] green_array = new double[SCAN_LENGTH];
-    double[] blue_array = new double[SCAN_LENGTH];
+  public boolean Calibrate(double[] target, double[] red_array, double[] green_array, double[] blue_array) {
     double[] mean = new double[3];
     double[] standard_deviation = new double[3]; 
-    /*
-     * while(!stop) {
-     * 
-     * }
-     */
-    for (int i = 0; i < SCAN_TIME; i++) {
-      red_array[i] = initialReading(RED_INDEX);
-      green_array[i] = initialReading(GREEN_INDEX);
-      blue_array[i] = initialReading(BLUE_INDEX);
-    }
 
     mean[RED_INDEX] = Find_Mean(red_array);
     mean[GREEN_INDEX] = Find_Mean(green_array);
@@ -97,47 +69,5 @@ public class CanCalibrator {
     else {
       return false;
     }
-  }
-  
-  /**
-   * initial readings taken (100 times) and the average is used to distinguish between the wooden
-   * board and the black line. Each reading is amplified to enhance the sensitivity of the sensor
-   * 
-   * @return
-   */
-  private double initialReading(int color_id) {
-    for (int i = 0; i < 100; i++) {
-      // acquires sample data
-      lightColor.fetchSample(lightData, color_id);
-      // amplifies and sums the sample data
-      std += lightData[color_id] * 100.0;
-    }
-    // take average of the standard
-    return std /= 100.0;
-  }
-
-  /**
-   * This is a private method which functions as a mean or average filter. The filter ensures the
-   * correctness of the readings, filtering out the noise in the signal from the color sensor. The
-   * filter takes 5 readings and sums the amplified value of each reading.
-   * 
-   * @return returns the average of the amplified reading
-   */
-  private double meanFilter() {
-    filterSum = 0;
-    // take 5 readings
-    for (int i = 0; i < 5; i++) {
-
-      // acquire sample data and read into array with no offset
-      lightColor.fetchSample(lightData, 0);
-
-      // amplify signal for increased sensitivity
-      filterSum += lightData[0] * 100;
-
-    }
-
-    // return an amplified average
-    return filterSum / 5.0;
-
   }
 }

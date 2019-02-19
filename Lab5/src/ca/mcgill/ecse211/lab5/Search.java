@@ -5,10 +5,13 @@ import static ca.mcgill.ecse211.lab5.Lab5.RIGHT_MOTOR;
 import java.util.Arrays;
 import ca.mcgill.ecse211.odometer.*;
 import lejos.robotics.SampleProvider;
+import lejos.robotics.navigation.Navigator;
 import ca.mcgill.ecse211.lab5.Navigation;
 
 public class Search extends Thread{
 
+
+  private final int SCAN_TIME = 100;  
   //{R, G, B} values based on in lab measurements and multiplied by 100
   private static final double[] blue = {0.39, 1.38, 0.79} ; //value of blue colour
   private static final double[] green = {1.0, 1.5, 0.5}; //value of green colour
@@ -24,6 +27,7 @@ public class Search extends Thread{
   private float[] lightData;
   private SampleProvider lightColor;
   private int filterSum;
+  private int std;
   
   public Search(Odometer odometer, SampleProvider usDistance, float[] usData, SampleProvider lightColor, float[] lightData) {
     this.odometer = odometer;
@@ -58,8 +62,11 @@ public class Search extends Thread{
   private void canFound(double angle, double distance) {
     Navigation nav = new Navigation(odometer);
     double[] r1, r2, r3, r4; //4 RGB readings
+    double[] red_array = new double[3];
+    double[] green_array = new double[3];
+    double[] blue_array = new double[3];
     nav.turnTo(angle);
- // rotates both motors for a fixed number of degrees equivalent to ds, the
+    // rotates both motors for a fixed number of degrees equivalent to ds, the
     // distance from the robot's current location to the next destination point,
     // equivalent as travelling straight. The boolean flag parameter indicates
     // whether method returns immediately, to allow simultaneous execution of both
@@ -67,11 +74,50 @@ public class Search extends Thread{
     RIGHT_MOTOR.rotate(convertDistance(WHEEL_RAD, distance - 10), true); //TODO: tweak -10 in lab --> we dont want the robot to crash into the can
     LEFT_MOTOR.rotate(convertDistance(WHEEL_RAD, distance - 10), false);
     //TODO: MAKE THE ROBOT TURN AROUND THE CAN AND TAKE 4 READINGS
+    CanCalibrator calibrator = new CanCalibrator();
+    double starting_angle = odometer.getXYT()[2];
+    int i = 0;
+    
+    while(odometer.getXYT()[2] < starting_angle + 180 * 0.8) {
+      red_array[(i % 100)] = initialReading(0);
+      green_array[(i % 100)] = initialReading(1);
+      blue_array[(i % 100)] = initialReading(2);
+        
+      //Decide to use bang bang or p controller and do the wall follower here
+    }
+
     //then we must calculate the means for r, g, and b, and then the euclidean distance
-    //compare that distance with the mean of the colour we r looking for to determine if it is the right can or not
-    
-    
+    //compare that distance with the mean of the colour we r looking for to determine if it is the right can or not  
+    boolean color = calibrator.Calibrate(threshold, red_array, green_array, blue_array);
+    if(color) {
+      //navigate to the end position
+      
+    }
+    else {
+      //navigate to the next position
+    }
   }
+  
+  
+  /**
+   * initial readings taken (100 times) and the average is used to distinguish between the wooden
+   * board and the black line. Each reading is amplified to enhance the sensitivity of the sensor
+   * 
+   * @return
+   */
+  private double initialReading(int color_id) {
+    for (int i = 0; i < 100; i++) {
+      // acquires sample data
+      lightColor.fetchSample(lightData, color_id);
+      // amplifies and sums the sample data
+      std += lightData[color_id] * 100.0;
+    }
+    // take average of the standard
+    return std /= 100.0;
+  }
+
+  
+  
   /**
    * This is a median filter. The filter takes 5 consecutive readings from the ultrasonic sensor,
    * amplifies them to increase sensor sensitivity, sorts them, and picks the median to minimize the
