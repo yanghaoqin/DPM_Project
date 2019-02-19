@@ -5,6 +5,7 @@ import lejos.hardware.Button;
 import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.lcd.TextLCD;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
+import lejos.hardware.motor.EV3MediumRegulatedMotor;
 import lejos.hardware.port.Port;
 import lejos.hardware.sensor.*;
 import lejos.robotics.SampleProvider;
@@ -21,6 +22,13 @@ public class Lab5 {
 
   public static final EV3LargeRegulatedMotor RIGHT_MOTOR =
       new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
+  
+  /**
+   * The instance of the medium EV3 motor that controls the turning of the ultrasonic sensor. The
+   * motor is connected to port C on the EV3 brick.
+   */
+  public static final EV3MediumRegulatedMotor SENSOR_MOTOR =
+      new EV3MediumRegulatedMotor(LocalEV3.get().getPort("C"));
 
   private static final Port US_PORT = LocalEV3.get().getPort("S1");
 

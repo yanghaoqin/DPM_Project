@@ -7,6 +7,8 @@ import ca.mcgill.ecse211.odometer.*;
 import lejos.robotics.SampleProvider;
 import lejos.robotics.navigation.Navigator;
 import ca.mcgill.ecse211.lab5.Navigation;
+import static ca.mcgill.ecse211.lab5.Lab5.SENSOR_MOTOR;
+import ca.mcgill.ecse211.lab5.UltrasonicMotor;
 
 public class Search extends Thread{
 
@@ -20,7 +22,8 @@ public class Search extends Thread{
   private static final int TR = 0; //colour of target can: must be changed during demo
   private static double[] threshold; //colour threshold to identify correct can
   private static final int CAN_THERE = 50; //value of us sensor when there is a can in front of it TODO: tweak in lab
-  private static final double WHEEL_RAD = 2.15;;
+  private static final double WHEEL_RAD = 2.15;
+  private static final int SPEED = 150;
   Odometer odometer; //odometer
   private float[] usData;
   private SampleProvider usDistance;
@@ -49,10 +52,19 @@ public class Search extends Thread{
   public void run() {
     double distance;
     double angle;
+    UltrasonicMotor usmot = new UltrasonicMotor();
+    
+    LEFT_MOTOR.setSpeed(SPEED);
+    RIGHT_MOTOR.setSpeed(SPEED);
+    LEFT_MOTOR.forward();
+    RIGHT_MOTOR.forward();
+    
     while(true) {
       distance = medianFilter();
       if (distance <= CAN_THERE) { 
-        angle = sensorMotor.getAngle; //TODO: add sensor motor and find the angle at which it is
+        angle = usmot.getAngle(); //TODO: add sensor motor and find the angle at which it is
+        LEFT_MOTOR.stop();
+        RIGHT_MOTOR.stop();
         break;
       }
     }
