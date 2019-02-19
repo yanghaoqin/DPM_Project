@@ -62,9 +62,9 @@ public class Search extends Thread{
   private void canFound(double angle, double distance) {
     Navigation nav = new Navigation(odometer);
     double[] r1, r2, r3, r4; //4 RGB readings
-    double[] red_array = new double[3];
-    double[] green_array = new double[3];
-    double[] blue_array = new double[3];
+    double[] red_array = new double[100];
+    double[] green_array = new double[100];
+    double[] blue_array = new double[100];
     nav.turnTo(angle);
     // rotates both motors for a fixed number of degrees equivalent to ds, the
     // distance from the robot's current location to the next destination point,
