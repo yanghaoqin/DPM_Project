@@ -15,6 +15,10 @@ public class Search extends Thread{
 
   private final int SCAN_TIME = 100;  
   //{R, G, B} values based on in lab measurements and multiplied by 100
+  private static final int LLx = 5; //lower left x coordinate of searching area, modify during demo
+  private static final int LLy = 5; //lower left y coordinate of searching area, modify during demo
+  private static final int URx = 7; //lower left x coordinate of searching area, modify during demo
+  private static final int URy = 7; //lower left y coordinate of searching area, modify during demo
   private static final double[] blue = {0.39, 1.38, 0.79} ; //value of blue colour
   private static final double[] green = {1.0, 1.5, 0.5}; //value of green colour
   private static final double[] yellow = {2.25, 1.66, 0.29}; //value of yellow colour
@@ -24,6 +28,7 @@ public class Search extends Thread{
   private static final int CAN_THERE = 50; //value of us sensor when there is a can in front of it TODO: tweak in lab
   private static final double WHEEL_RAD = 2.15;
   private static final int SPEED = 150;
+  private static final double CAN_EXISTS = 50; //distance to show there is a can at that intersection, TODO: tweak in lab
   Odometer odometer; //odometer
   private float[] usData;
   private SampleProvider usDistance;
@@ -50,53 +55,40 @@ public class Search extends Thread{
   }
   
   public void run() {
-    double distance;
-    double angle;
-    UltrasonicMotor usmot = new UltrasonicMotor();
-    
-    LEFT_MOTOR.setSpeed(SPEED);
-    RIGHT_MOTOR.setSpeed(SPEED);
-    LEFT_MOTOR.forward();
-    RIGHT_MOTOR.forward();
-    
-    while(true) {
-      distance = medianFilter();
-      if (distance <= CAN_THERE) { 
-        angle = usmot.getAngle(); //TODO: add sensor motor and find the angle at which it is
-        LEFT_MOTOR.stop();
-        RIGHT_MOTOR.stop();
-        break;
-      }
+    Navigation nav = new Navigation(odometer);
+    for (int x = LLx; x <= URx; x++) { //iterate over all x in search zone
+      for (int y = LLy; y <= URy; y++) {
+        nav.travelTo(x, y);
+        if (isCan()) {
+          canFound();
+        }
+      }      
     }
-    canFound(angle, distance);
   }
   
-  private void canFound(double angle, double distance) {
-    Navigation nav = new Navigation(odometer);
-    double[] r1, r2, r3, r4; //4 RGB readings
-    double[] red_array = new double[100];
-    double[] green_array = new double[100];
-    double[] blue_array = new double[100];
-    nav.turnTo(angle);
-    // rotates both motors for a fixed number of degrees equivalent to ds, the
-    // distance from the robot's current location to the next destination point,
-    // equivalent as travelling straight. The boolean flag parameter indicates
-    // whether method returns immediately, to allow simultaneous execution of both
-    // rotate() methods. The method waits for the right motor to complete.
-    RIGHT_MOTOR.rotate(convertDistance(WHEEL_RAD, distance - 10), true); //TODO: tweak -10 in lab --> we dont want the robot to crash into the can
-    LEFT_MOTOR.rotate(convertDistance(WHEEL_RAD, distance - 10), false);
-    //TODO: MAKE THE ROBOT TURN AROUND THE CAN AND TAKE 4 READINGS
+  private boolean isCan() {
+    double distance = medianFilter();
+    if (distance < CAN_EXISTS) {
+      return true;
+    }
+    return false;
+  }
+
+  private void canFound() {
+    double[] red_array = new double[100]; //array for reds
+    double[] green_array = new double[100]; //array for greens
+    double[] blue_array = new double[100]; //array for blues
+   
     CanCalibrator calibrator = new CanCalibrator();
     double starting_angle = odometer.getXYT()[2];
     int i = 0;
     
-    while(odometer.getXYT()[2] < starting_angle + 180 * 0.8) {
+   
       red_array[(i % 100)] = initialReading(0);
       green_array[(i % 100)] = initialReading(1);
       blue_array[(i % 100)] = initialReading(2);
         
-      //Decide to use bang bang or p controller and do the wall follower here
-    }
+     //TODO: Decide to use bang bang and do the wall follower here and stop every once in a while to take a reading
 
     //then we must calculate the means for r, g, and b, and then the euclidean distance
     //compare that distance with the mean of the colour we r looking for to determine if it is the right can or not  
