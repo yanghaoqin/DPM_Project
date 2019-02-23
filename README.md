@@ -9,7 +9,7 @@
 
 ## Testing Documents
 - [General Test Document](https://docs.google.com/document/d/1gPnKZOvw8x-GOCjdA5tBYL4x-18XWp0Em1uBOd9gDwM/edit?usp=sharing)
-- [Ultrasonic Sensor Testing](https://docs.google.com/document/d/17wFdIWvagy2ThjVtIcPRNX8FUa_mUK13jIYnUb3c5AI/edit?usp=sharing)
+- [1.0 Ultrasonic Sensor Testing](https://docs.google.com/document/d/17wFdIWvagy2ThjVtIcPRNX8FUa_mUK13jIYnUb3c5AI/edit?usp=sharing)
 
 ## Meeting PPTs
 - [Week 1](https://docs.google.com/presentation/d/15wuzCJcVaoQD0-3KEkE1ulvGZN4r26m28x9Qrnbx1DM/edit?usp=sharing)
