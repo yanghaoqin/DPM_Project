@@ -7,9 +7,10 @@ import ca.mcgill.ecse211.odometer.*;
 import lejos.robotics.SampleProvider;
 import lejos.robotics.navigation.Navigator;
 import ca.mcgill.ecse211.lab5.Navigation;
+/*
 import static ca.mcgill.ecse211.lab5.Lab5.SENSOR_MOTOR;
 import ca.mcgill.ecse211.lab5.UltrasonicMotor;
-
+*/
 public class Search extends Thread{
 
 
@@ -79,20 +80,14 @@ public class Search extends Thread{
     double[] green_array = new double[100]; //array for greens
     double[] blue_array = new double[100]; //array for blues
    
-    CanCalibrator calibrator = new CanCalibrator();
+    CanCalibrator calibrator = new CanCalibrator(lightColor, lightData);
     double starting_angle = odometer.getXYT()[2];
-    int i = 0;
-    
-   
-      red_array[(i % 100)] = initialReading(0);
-      green_array[(i % 100)] = initialReading(1);
-      blue_array[(i % 100)] = initialReading(2);
-        
+
      //TODO: Decide to use bang bang and do the wall follower here and stop every once in a while to take a reading
 
     //then we must calculate the means for r, g, and b, and then the euclidean distance
     //compare that distance with the mean of the colour we r looking for to determine if it is the right can or not  
-    boolean color = calibrator.Calibrate(threshold, red_array, green_array, blue_array);
+    boolean color = calibrator.Calibrate(threshold);
     if(color) {
       //navigate to the end position
       
