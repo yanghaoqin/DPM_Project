@@ -1,7 +1,6 @@
 package ca.mcgill.ecse211.lab5;
 
 import lejos.robotics.SampleProvider;
-import ca.mcgill.ecse211.lab5.Lab5.*;
 import static ca.mcgill.ecse211.lab5.Lab5.BLUE_COLOR;
 import static ca.mcgill.ecse211.lab5.Lab5.YELLOW_COLOR;
 import static ca.mcgill.ecse211.lab5.Lab5.GREEN_COLOR;
@@ -206,28 +205,29 @@ public class CanCalibrator {
         && Compare_Standard_Deviation(RED_COLOR[BLUE_INDEX], standard_deviation[BLUE_INDEX],
             mean[BLUE_INDEX])) {
       return RED_INDEX;
-    } else if(Compare_Standard_Deviation(RED_COLOR[RED_INDEX], standard_deviation[RED_INDEX],
+    } else if(Compare_Standard_Deviation(GREEN_COLOR[RED_INDEX], standard_deviation[RED_INDEX],
         mean[RED_INDEX])
-        && Compare_Standard_Deviation(RED_COLOR[GREEN_INDEX], standard_deviation[GREEN_INDEX],
+        && Compare_Standard_Deviation(GREEN_COLOR[GREEN_INDEX], standard_deviation[GREEN_INDEX],
             mean[GREEN_INDEX])
-        && Compare_Standard_Deviation(RED_COLOR[BLUE_INDEX], standard_deviation[BLUE_INDEX],
+        && Compare_Standard_Deviation(GREEN_COLOR[BLUE_INDEX], standard_deviation[BLUE_INDEX],
             mean[BLUE_INDEX])){
       return GREEN_INDEX;
-    } else if(Compare_Standard_Deviation(RED_COLOR[RED_INDEX], standard_deviation[RED_INDEX],
+    } else if(Compare_Standard_Deviation(BLUE_COLOR[RED_INDEX], standard_deviation[RED_INDEX],
         mean[RED_INDEX])
-        && Compare_Standard_Deviation(RED_COLOR[GREEN_INDEX], standard_deviation[GREEN_INDEX],
+        && Compare_Standard_Deviation(BLUE_COLOR[GREEN_INDEX], standard_deviation[GREEN_INDEX],
             mean[GREEN_INDEX])
-        && Compare_Standard_Deviation(RED_COLOR[BLUE_INDEX], standard_deviation[BLUE_INDEX],
+        && Compare_Standard_Deviation(BLUE_COLOR[BLUE_INDEX], standard_deviation[BLUE_INDEX],
             mean[BLUE_INDEX])) {
       return BLUE_INDEX;
-    } else if(Compare_Standard_Deviation(RED_COLOR[RED_INDEX], standard_deviation[RED_INDEX],
+    } else if(Compare_Standard_Deviation(YELLOW_COLOR[RED_INDEX], standard_deviation[RED_INDEX],
         mean[RED_INDEX])
-        && Compare_Standard_Deviation(RED_COLOR[GREEN_INDEX], standard_deviation[GREEN_INDEX],
+        && Compare_Standard_Deviation(YELLOW_COLOR[GREEN_INDEX], standard_deviation[GREEN_INDEX],
             mean[GREEN_INDEX])
-        && Compare_Standard_Deviation(RED_COLOR[BLUE_INDEX], standard_deviation[BLUE_INDEX],
+        && Compare_Standard_Deviation(YELLOW_COLOR[BLUE_INDEX], standard_deviation[BLUE_INDEX],
             mean[BLUE_INDEX])) {
       return YELLOW_INDEX;
     } else {
+      // other color
       return -1;
     }
   }

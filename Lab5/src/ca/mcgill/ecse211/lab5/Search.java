@@ -2,6 +2,11 @@ package ca.mcgill.ecse211.lab5;
 
 import static ca.mcgill.ecse211.lab5.Lab5.LEFT_MOTOR;
 import static ca.mcgill.ecse211.lab5.Lab5.RIGHT_MOTOR;
+import static ca.mcgill.ecse211.lab5.Lab5.BLUE_COLOR;
+import static ca.mcgill.ecse211.lab5.Lab5.YELLOW_COLOR;
+import static ca.mcgill.ecse211.lab5.Lab5.GREEN_COLOR;
+import static ca.mcgill.ecse211.lab5.Lab5.RED_COLOR;
+
 import java.util.Arrays;
 import ca.mcgill.ecse211.odometer.*;
 import lejos.robotics.SampleProvider;
@@ -21,19 +26,26 @@ public class Search extends Thread{
   private static final int URx = 7; //lower left x coordinate of searching area, modify during demo
   private static final int URy = 7; //lower left y coordinate of searching area, modify during demo
 
+  private static final int RED_INDEX = 4;
+  private static final int GREEN_INDEX = 2;
+  private static final int BLUE_INDEX = 1;
+  private static final int YELLOW_INDEX = 3;
+  
   private static final int TR = 0; //colour of target can: must be changed during demo
-  private static double[] threshold; //colour threshold to identify correct can
   private static final int CAN_THERE = 50; //value of us sensor when there is a can in front of it TODO: tweak in lab
   private static final double WHEEL_RAD = 2.15;
   private static final int SPEED = 150;
-  private static final double CAN_EXISTS = 50; //distance to show there is a can at that intersection, TODO: tweak in lab
-  Odometer odometer; //odometer
+  public static final double CAN_EXISTS = 50; //distance to show there is a can at that intersection, TODO: tweak in lab
+  
+  private static double[] threshold; //colour threshold to identify correct can
+  private Odometer odometer; //odometer
   private float[] usData;
   private SampleProvider usDistance;
   private float[] lightData;
   private SampleProvider lightColor;
   private int filterSum;
   private int std;
+  private boolean isCan;
   
   public Search(Odometer odometer, SampleProvider usDistance, float[] usData, SampleProvider lightColor, float[] lightData) {
     this.odometer = odometer;
@@ -41,22 +53,31 @@ public class Search extends Thread{
     this.usDistance = usDistance;
     this.lightData = lightData;
     this.lightColor = lightColor;
+    this.isCan = false;
+    
+    // determine which color from TR given
     switch(TR) {
-      case 1: threshold = blue; //TR = 1 --> we are looking for a blue can
+      case 1: //TR = 1 --> blue can
+        threshold = BLUE_COLOR;
         break;
-      case 2: threshold = green; //TR = 2 --> we are looking for a green can
+      case 2: //TR = 2 --> green can
+        threshold = GREEN_COLOR; 
         break;
-      case 3: threshold = yellow; //TR = 3 --> we are looking for a yellow can
+      case 3: //TR = 3 --> yellow can
+        threshold = YELLOW_COLOR; 
         break;
-      case 4: threshold = red; //TR = 4 --> we are looking for a red can
+      case 4: //TR = 4 --> red can
+        threshold = RED_COLOR; 
     }
   }
   
   public void run() {
-    Navigation nav = new Navigation(odometer);
+    Navigation nav = new Navigation(odometer, usDistance, usData);
+  
+    // scan grid
     for (int x = LLx; x <= URx; x++) { //iterate over all x in search zone
       for (int y = LLy; y <= URy; y++) {
-        nav.travelTo(x, y);
+        isCan = nav.travelTo(x, y);
         if (isCan()) {
           canFound();
         }
@@ -64,6 +85,10 @@ public class Search extends Thread{
     }
   }
   
+  /**
+   * 
+   * @return
+   */
   private boolean isCan() {
     double distance = medianFilter();
     if (distance < CAN_EXISTS) {
@@ -112,8 +137,6 @@ public class Search extends Thread{
     return std /= 100.0;
   }
 
-  
-  
   /**
    * This is a median filter. The filter takes 5 consecutive readings from the ultrasonic sensor,
    * amplifies them to increase sensor sensitivity, sorts them, and picks the median to minimize the
@@ -131,6 +154,7 @@ public class Search extends Thread{
     Arrays.sort(arr); // sort readingss
     return arr[2]; // take median value
   }
+  
   /**
    * This is a static method allows the conversion of a distance to the total rotation of each wheel
    * need to cover that distance.
@@ -150,17 +174,12 @@ public class Search extends Thread{
     filterSum = 0;
     // take 5 readings
     for (int i = 0; i < 5; i++) {
-
       // acquire sample data and read into array with no offset
       lightColor.fetchSample(lightData, 0);
-
       // amplify signal for increased sensitivity
       filterSum += lightData[0] * 100;
-
     }
-
     // return an amplified average
     return filterSum / 5.0;
-
   }
 }

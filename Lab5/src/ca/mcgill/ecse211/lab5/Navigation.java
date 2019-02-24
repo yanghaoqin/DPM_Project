@@ -2,11 +2,14 @@ package ca.mcgill.ecse211.lab5;
 
 // non-static imports
 import ca.mcgill.ecse211.odometer.*;
+import lejos.robotics.SampleProvider;
 // static imports from Lab3 class
 import static ca.mcgill.ecse211.lab5.Lab5.LEFT_MOTOR;
 import static ca.mcgill.ecse211.lab5.Lab5.RIGHT_MOTOR;
 import static ca.mcgill.ecse211.lab5.Lab5.TILE;
+import static ca.mcgill.ecse211.lab5.Search.CAN_EXISTS;
 //import static ca.mcgill.ecse211.lab5.Lab5.PATH;
+import java.util.Arrays;
 
 /**
  * <p>
@@ -133,6 +136,12 @@ public class Navigation /*extends Thread*/ {
    */
   private volatile boolean isNavigating;
 
+  private SampleProvider usDistance;
+  
+  private float[] usData;
+
+  private double distance;
+  
   // -----------------------------------------------------------------------------
   // Constructor
   // -----------------------------------------------------------------------------
@@ -144,9 +153,11 @@ public class Navigation /*extends Thread*/ {
    * @param odometer - the odometer instance passed from Lab3, gives access to retrieve position
    *        data
    */
-  public Navigation(Odometer odometer) {
+  public Navigation(Odometer odometer, SampleProvider usDistance, float[] usData) {
     this.odo = odometer;
     this.isNavigating = false;
+    this.usDistance = usDistance;
+    this.usData = usData;
   }
 
   // -----------------------------------------------------------------------------
@@ -187,7 +198,7 @@ public class Navigation /*extends Thread*/ {
    * @param x - the x coordinate with the robot as the origin (0,0)
    * @param y - the y coordinate with the robot as the origin (0,0)
    */
-  public void travelTo(double x, double y) {
+  public boolean travelTo(double x, double y) {
 
     // convert input coordinates x and y into distances in cm
     x = x * TILE;
@@ -238,9 +249,19 @@ public class Navigation /*extends Thread*/ {
     // whether method returns immediately, to allow simultaneous execution of both
     // rotate() methods. The method waits for the right motor to complete.
     RIGHT_MOTOR.rotate(convertDistance(WHEEL_RAD, ds), true);
-    LEFT_MOTOR.rotate(convertDistance(WHEEL_RAD, ds), false);
+    LEFT_MOTOR.rotate(convertDistance(WHEEL_RAD, ds), true);
 
+    while(LEFT_MOTOR.isMoving() || RIGHT_MOTOR.isMoving()) {
+      distance = medianFilter();
+      if (distance < CAN_EXISTS) {
+        LEFT_MOTOR.stop();
+        RIGHT_MOTOR.stop();
+        return true;
+      }
+    }
+    
     isNavigating = false; // update navigation status
+    return false;
   }
 
   /**
@@ -290,7 +311,25 @@ public class Navigation /*extends Thread*/ {
   // -----------------------------------------------------------------------------
   // Private Methods
   // -----------------------------------------------------------------------------
-
+  
+  /**
+   * This is a median filter. The filter takes 5 consecutive readings from the ultrasonic sensor,
+   * amplifies them to increase sensor sensitivity, sorts them, and picks the median to minimize the
+   * influence of false negatives and false positives in sensor readings, if any. The sensor is very
+   * likely to report false negatives.
+   * 
+   * @return the median of the five readings, sorted from small to large
+   */
+  private double medianFilter() {
+    double[] arr = new double[5]; // store readings
+    for (int i = 0; i < 5; i++) { // take 5 readingss
+      usDistance.fetchSample(usData, 0); // store reading in buffer
+      arr[i] = usData[0] * 100.0; // signal amplification
+    }
+    Arrays.sort(arr); // sort readingss
+    return arr[2]; // take median value
+  }
+  
   /**
    * This is a static method allows the conversion of a distance to the total rotation of each wheel
    * need to cover that distance.
