@@ -70,7 +70,7 @@ public class CanCalibrator {
     mean = Mean_Normalizer(mean[RED_INDEX], mean[GREEN_INDEX], mean[BLUE_INDEX]);
 
     // determine which color
-
+    return isColor();
   }
 
   /**
