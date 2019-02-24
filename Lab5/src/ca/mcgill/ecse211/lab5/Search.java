@@ -7,9 +7,10 @@ import ca.mcgill.ecse211.odometer.*;
 import lejos.robotics.SampleProvider;
 import lejos.robotics.navigation.Navigator;
 import ca.mcgill.ecse211.lab5.Navigation;
+/*
 import static ca.mcgill.ecse211.lab5.Lab5.SENSOR_MOTOR;
 import ca.mcgill.ecse211.lab5.UltrasonicMotor;
-
+*/
 public class Search extends Thread{
 
 
@@ -19,10 +20,7 @@ public class Search extends Thread{
   private static final int LLy = 5; //lower left y coordinate of searching area, modify during demo
   private static final int URx = 7; //lower left x coordinate of searching area, modify during demo
   private static final int URy = 7; //lower left y coordinate of searching area, modify during demo
-  private static final double[] blue = {0.39, 1.38, 0.79} ; //value of blue colour
-  private static final double[] green = {1.0, 1.5, 0.5}; //value of green colour
-  private static final double[] yellow = {2.25, 1.66, 0.29}; //value of yellow colour
-  private static final double[] red = {2.84, 1.17, 0.58}; //value of red colour
+
   private static final int TR = 0; //colour of target can: must be changed during demo
   private static double[] threshold; //colour threshold to identify correct can
   private static final int CAN_THERE = 50; //value of us sensor when there is a can in front of it TODO: tweak in lab
@@ -79,20 +77,14 @@ public class Search extends Thread{
     double[] green_array = new double[100]; //array for greens
     double[] blue_array = new double[100]; //array for blues
    
-    CanCalibrator calibrator = new CanCalibrator();
+    CanCalibrator calibrator = new CanCalibrator(lightColor, lightData);
     double starting_angle = odometer.getXYT()[2];
-    int i = 0;
-    
-   
-      red_array[(i % 100)] = initialReading(0);
-      green_array[(i % 100)] = initialReading(1);
-      blue_array[(i % 100)] = initialReading(2);
-        
+
      //TODO: Decide to use bang bang and do the wall follower here and stop every once in a while to take a reading
 
     //then we must calculate the means for r, g, and b, and then the euclidean distance
     //compare that distance with the mean of the colour we r looking for to determine if it is the right can or not  
-    boolean color = calibrator.Calibrate(threshold, red_array, green_array, blue_array);
+    boolean color = calibrator.Calibrate(threshold);
     if(color) {
       //navigate to the end position
       
