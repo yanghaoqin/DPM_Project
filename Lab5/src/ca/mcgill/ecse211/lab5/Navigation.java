@@ -92,13 +92,13 @@ public class Navigation /*extends Thread*/ {
    * A value for motor acceleration that prevents the wheels from slipping on the demo floor by
    * accelerating and decelerating slowly
    */
-  private static final int SMOOTH_ACCELERATION = 500;
+  private static final int SMOOTH_ACCELERATION = 400;
 
   /**
    * A value for motor acceleration that prevents the wheels from slipping on the demo floor by
    * accelerating and decelerating slowly
    */
-  private static final int TURN_ACCELERATION = 250;
+  private static final int TURN_ACCELERATION = 200;
 
   /**
    * A revolution of half of a circle in degrees
@@ -254,8 +254,8 @@ public class Navigation /*extends Thread*/ {
     while(LEFT_MOTOR.isMoving() || RIGHT_MOTOR.isMoving()) {
       distance = medianFilter();
       if (distance < CAN_EXISTS) {
-        LEFT_MOTOR.stop();
-        RIGHT_MOTOR.stop();
+        LEFT_MOTOR.stop(true);
+        RIGHT_MOTOR.stop(false);
         return true;
       }
     }

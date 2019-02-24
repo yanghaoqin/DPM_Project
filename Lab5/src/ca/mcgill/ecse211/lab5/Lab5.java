@@ -18,8 +18,8 @@ public class Lab5 {
   public static final double TILE = 30.48;
 
   // r, g, b in order
-  public static final double[] BLUE_COLOR = {0.19, 0.92, 0.34}; // value of blue colour
-  public static final double[] GREEN_COLOR = {0.79, 0.59, 0.34}; // value of green colour
+  public static final double[] BLUE_COLOR = {0.19, 0.40, 0.87}; // value of blue colour
+  public static final double[] GREEN_COLOR = {0.35, 0.85, 0.39}; // value of green colour
   public static final double[] YELLOW_COLOR = {0.85, 0.52, 0.09}; // value of yellow colour
   public static final double[] RED_COLOR = {0.98, 0.24, 0.07}; // value of red colour
 
@@ -38,11 +38,11 @@ public class Lab5 {
    */
 
   public static final EV3MediumRegulatedMotor SENSOR_MOTOR =
-      new EV3MediumRegulatedMotor(LocalEV3.get().getPort("C"));
+      new EV3MediumRegulatedMotor(LocalEV3.get().getPort("B"));
 
-  private static final Port US_PORT = LocalEV3.get().getPort("S1");
+  private static final Port US_PORT = LocalEV3.get().getPort("S2");
 
-  private static final Port CS_PORT = LocalEV3.get().getPort("S2");
+  private static final Port CS_PORT = LocalEV3.get().getPort("S4");
 
   private static final Port COLOR_PORT = LocalEV3.get().getPort("S3");
 
@@ -131,7 +131,7 @@ public class Lab5 {
       UltrasonicLocalizer UL = new UltrasonicLocalizer(buttonChoice, usDistance, usData, odometer);
       UL.localize();
       
-      LightLocalizer LL = new LightLocalizer(lightColor, lightData, usDistance, usData, odometer);
+      LightLocalizer LL = new LightLocalizer(cs, csData, usDistance, usData, odometer);
       LL.localize();
 
       Search search = new Search(odometer, usDistance, usData, lightColor, lightData);

@@ -9,6 +9,8 @@ import lejos.hardware.port.Port;
 import lejos.hardware.sensor.*;
 import lejos.robotics.SampleProvider;
 
+import static ca.mcgill.ecse211.lab5.Lab5.SENSOR_MOTOR;
+
 import java.util.Arrays;
 
 import ca.mcgill.ecse211.odometer.*;
@@ -25,6 +27,7 @@ public class ColorDetection extends Thread {
 	 public int colorIndex;
 	 
 	 private int filterSum;
+	 CanCalibrator calibrator;
 	 
 	// the display LCD screen object
 	 private TextLCD lcd;
@@ -34,9 +37,10 @@ public class ColorDetection extends Thread {
 		this.usData = usData;
 		this.lightColor = lightColor;
         this.lightData = lightData;
+        this.lcd = lcd;
+        calibrator = new CanCalibrator(lightColor, lightData);
 	}
 	public void run() {
-		CanCalibrator calibrator = new CanCalibrator(lightColor, lightData);
 		
 		while(true){
 			
@@ -44,7 +48,7 @@ public class ColorDetection extends Thread {
 				lcd.drawString("Object Detected!!!", 0, 0);
 				Sound.beep();
 				
-				colorIndex = calibrator.Calibrate();
+				colorIndex = rotateSensorDetect();
 				if (colorIndex == 0){
 					lcd.drawString("Color detected: Red", 0, 1);
 				}
@@ -57,9 +61,6 @@ public class ColorDetection extends Thread {
 				else if (colorIndex == 3){
 					lcd.drawString("Color detected: Yellow", 0, 1);
 				}
-				
-				
-				//Wait 6 second for check reading
 				try {
 					Thread.sleep(6000);
 				} catch (InterruptedException e) {
@@ -67,6 +68,9 @@ public class ColorDetection extends Thread {
 					e.printStackTrace();
 				}
 				
+				
+				//Wait 6 second for check reading
+			
 				lcd.clear();
 				
 			}
@@ -75,7 +79,29 @@ public class ColorDetection extends Thread {
 	}
 	
 	
-	
+	private int rotateSensorDetect(){
+		int[] colorResult = new int[7];
+		for (int i = 0; i < 7; i++){
+			colorResult[i] = calibrator.Calibrate();
+			Lab5.SENSOR_MOTOR.setAcceleration(300);
+			Lab5.SENSOR_MOTOR.setSpeed(300);
+			Lab5.SENSOR_MOTOR.rotate(30, false);
+		}
+		SENSOR_MOTOR.rotateTo(0, false);
+		Arrays.sort(colorResult);
+		int prev = colorResult[0];
+		int count = 1;
+		for(int i = 1; i<colorResult.length; i++){
+			if (colorResult[i] == prev && colorResult[i] != -1){
+				count ++;
+				if(count > colorResult.length / 2 -1 ) {return colorResult[i];}
+			}else{
+				count = 1;
+				prev = colorResult[i];
+			}
+		}
+		return -1;
+	}
 	private boolean isCan() {
 	    double distance = medianFilter();
 	    if (distance < CAN_EXISTS) {

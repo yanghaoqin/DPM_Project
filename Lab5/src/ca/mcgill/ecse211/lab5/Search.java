@@ -23,22 +23,21 @@ public class Search extends Thread {
 
   private final int SCAN_TIME = 100;
   // {R, G, B} values based on in lab measurements and multiplied by 100
-  private static final int LLx = 5; // lower left x coordinate of searching area, modify during demo
-  private static final int LLy = 5; // lower left y coordinate of searching area, modify during demo
-  private static final int URx = 7; // lower left x coordinate of searching area, modify during demo
-  private static final int URy = 7; // lower left y coordinate of searching area, modify during demo
+  private static final int LLx = 1; // lower left x coordinate of searching area, modify during demo
+  private static final int LLy = 1; // lower left y coordinate of searching area, modify during demo
+  private static final int URx = 4; // lower left x coordinate of searching area, modify during demo
+  private static final int URy = 4; // lower left y coordinate of searching area, modify during demo
 
   private static final int RED_INDEX = 4;
   private static final int GREEN_INDEX = 2;
   private static final int BLUE_INDEX = 1;
   private static final int YELLOW_INDEX = 3;
 
-  private static final int TR = 0; // colour of target can: must be changed during demo
-  private static final int CAN_THERE = 50; // value of us sensor when there is a can in front of it
-                                           // TODO: tweak in lab
+  private static final int TR = 1; // colour of target can: must be changed during demo
+  
   private static final double WHEEL_RAD = 2.15;
-  private static final int SPEED = 150;
-  public static final double CAN_EXISTS = 50; // distance to show there is a can at that
+  private static final int SPEED = 100;
+  public static final double CAN_EXISTS = 15; // distance to show there is a can at that
                                               // intersection, TODO: tweak in lab
 
   private static double[] threshold; // colour threshold to identify correct can
@@ -53,6 +52,8 @@ public class Search extends Thread {
   private Navigation nav;
   private double[] colorData;
   private CanCalibrator calibrator;
+  
+  public static double distDisplay;
 
   public Search(Odometer odometer, SampleProvider usDistance, float[] usData,
       SampleProvider lightColor, float[] lightData) {
@@ -83,21 +84,21 @@ public class Search extends Thread {
 
   public void run() {
     // scan grid
-    for (int y = LLy; y <= URy; y++) { // iterate over all x in search zone
+    for (int y = LLy; y <= URy; y++) { 
       if ((y - LLy) % 2 == 0) {
         for (int x = LLx; x <= URx; x++) {
           isCan = nav.travelTo(x, y);
-          if (isCan()) {
-            canFound();
-          }
+//          if (isCan()) {
+//            canFound();
+//          }
         }
       } else {
         if ((y - LLy) % 2 == 1) {
           for (int x = URx; x >= LLx; x--) {
             isCan = nav.travelTo(x, y);
-            if (isCan()) {
-              canFound();
-            }
+//            if (isCan()) {
+//              canFound();
+//            }
           }
         }
       }
@@ -125,7 +126,7 @@ public class Search extends Thread {
     double starting_angle = odometer.getXYT()[2];
 
     // check if color reading is correct
-    boolean color = takeMeasurement();
+    boolean color = takeMeasurement(threshold);
 
     if (color) {
       // navigate to the end position
@@ -138,20 +139,29 @@ public class Search extends Thread {
     }
   }
 
-  private boolean takeMeasurement() {
-    if (calibrator.Calibrate() >= 0) {
+  private boolean takeMeasurement(double[] targetColorThreshold) {
+    if (calibrator.Calibrate(targetColorThreshold)) {
       SENSOR_MOTOR.rotateTo(0, false);
       return true;
+      
     } else {
       SENSOR_MOTOR.rotate(-10, false);
-      int i = 0;
-      while (calibrator.Calibrate() < 0 && i < 4) {
+      int colorTime = 0;
+      int readTime = 0;
+      while ( readTime < 5) {
         SENSOR_MOTOR.rotate(-10, false);
-        i++;
+        if(calibrator.Calibrate(targetColorThreshold)){
+        	colorTime++;
+        }
+        readTime++;
+        if(colorTime>2){
+        	return true;
+        }
+        
       }
       SENSOR_MOTOR.rotateTo(0, false);
       hitIt();
-      return true;
+      return false;
     }
   }
 

@@ -129,7 +129,7 @@ public class LightLocalizer {
 
     switch (SC) { // depending on which corner we started on
       case 0:
-        odometer.setXYT(1 * TILE, 1 * TILE, 0);
+        odometer.setXYT(0 * TILE, 0 * TILE, 0);
         break;
       case 1:
         odometer.setXYT(7 * TILE, 1 * TILE, 270);
@@ -141,8 +141,8 @@ public class LightLocalizer {
         odometer.setXYT(1 * TILE, 7 * TILE, 90);
     }
 
-    Navigation nav = new Navigation(odometer, usDistance, usData);
-    nav.travelTo(LLx, LLy); // navigate to lower left of searching area
+    //Navigation nav = new Navigation(odometer, usDistance, usData);
+    travelTo(LLx, LLy); // navigate to lower left of searching area
     // TODO: tweak LLx and LLy
     Sound.beep(); // beep when at lower left corner
 
