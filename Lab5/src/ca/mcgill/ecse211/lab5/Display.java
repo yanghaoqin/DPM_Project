@@ -1,6 +1,8 @@
 package ca.mcgill.ecse211.lab5;
 
 import java.text.DecimalFormat;
+
+import ca.mcgill.ecse211.lab5.CanCalibrator;
 import ca.mcgill.ecse211.odometer.Odometer;
 import ca.mcgill.ecse211.odometer.OdometerExceptions;
 import lejos.hardware.lcd.TextLCD;
@@ -106,6 +108,9 @@ public class Display implements Runnable {
             lcd.drawString("X: " + numberFormat.format(position[0]), 0, 0);
             lcd.drawString("Y: " + numberFormat.format(position[1]), 0, 1);
             lcd.drawString("T: " + numberFormat.format(position[2]), 0, 2);
+            lcd.drawString("RED: " + numberFormat.format(CanCalibrator.mean[0]) + " +" + numberFormat.format(CanCalibrator.standard_deviation[0]), 0, 3);
+            lcd.drawString("GREEN: " + numberFormat.format(CanCalibrator.mean[1]) + " +" + numberFormat.format(CanCalibrator.standard_deviation[1]), 0, 4);
+            lcd.drawString("BLUE: " + numberFormat.format(CanCalibrator.mean[2]) + " +" + numberFormat.format(CanCalibrator.standard_deviation[2]), 0, 5);
             
             // this ensures that the data is updated only once every period
             // record current time
