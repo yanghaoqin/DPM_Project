@@ -29,6 +29,7 @@ public class Lab5 {
   public static final EV3LargeRegulatedMotor RIGHT_MOTOR =
       new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
 
+  
   /**
    * The instance of the medium EV3 motor that controls the turning of the ultrasonic sensor. The
    * motor is connected to port C on the EV3 brick.
@@ -101,7 +102,6 @@ public class Lab5 {
       System.exit(0); // terminate program
 
     } else {
-      
       
       
     }

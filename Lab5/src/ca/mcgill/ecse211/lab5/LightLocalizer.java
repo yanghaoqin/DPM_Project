@@ -15,11 +15,13 @@ public class LightLocalizer extends Thread {
   private Odometer odometer;
   private float[] lightData;
   private SampleProvider lightColor;
+  private SampleProvider usDistance;
+  private float[] usData;
   private float filterSum;
-  
-  private static final int SC = 0; //starting corner, modify during demo
-  private static final int LLx = 5; //lower left x coordinate of searching area, modify during demo
-  private static final int LLy = 5; //lower left y coordinate of searching area, modify during demo
+
+  private static final int SC = 0; // starting corner, modify during demo
+  private static final int LLx = 5; // lower left x coordinate of searching area, modify during demo
+  private static final int LLy = 5; // lower left y coordinate of searching area, modify during demo
   private static final int SPEED = 150; // might need to change
   private static final double THRESHOLD = 0.75; // threshold for finding gridlines
   private static final double TURN_CIRCLE = 360.0;
@@ -42,7 +44,8 @@ public class LightLocalizer extends Thread {
   private double down_y;
   double intensity;
 
-  public LightLocalizer(SampleProvider lightColor, float[] lightData, Odometer odometer) {
+  public LightLocalizer(SampleProvider lightColor, float[] lightData, SampleProvider usDistance,
+      float[] usData, Odometer odometer) {
     this.odometer = odometer;
     this.lightData = lightData;
     this.lightColor = lightColor;
@@ -51,6 +54,8 @@ public class LightLocalizer extends Thread {
     this.right_x = 0;
     this.up_y = 0;
     this.down_y = 0;
+    this.usDistance = usDistance;
+    this.usData = usData;
     LEFT_MOTOR.setAcceleration(SMOOTH_ACCELERATION);
     RIGHT_MOTOR.setAcceleration(SMOOTH_ACCELERATION);
 
@@ -101,7 +106,7 @@ public class LightLocalizer extends Thread {
     RIGHT_MOTOR.rotate(convertAngle(WHEEL_RAD, TRACK, ANGLE_TO_ORIGIN), false);
 
     odometer.setTheta(0);
-    
+
     find4Points();
 
     double xTheta = Math.abs(left_x - right_x) / 2.0;
@@ -110,11 +115,11 @@ public class LightLocalizer extends Thread {
     odometer.setY(-dy);
 
     double yTheta = Math.abs(down_y - up_y) / 2.0;
-    
-    if(yTheta > 90) {
+
+    if (yTheta > 90) {
       yTheta = 180 - yTheta;
     }
-    
+
     double dx = Math.cos(yTheta * TO_RAD) * SENSOR_DIST;
 
     odometer.setX(-dx);
@@ -122,22 +127,26 @@ public class LightLocalizer extends Thread {
     travelTo(0, 0);
     turnTo(6);
 
-    switch(SC) { //depending on which corner we started on
-      case 0: odometer.setXYT(1*TILE, 1*TILE, 0);
+    switch (SC) { // depending on which corner we started on
+      case 0:
+        odometer.setXYT(1 * TILE, 1 * TILE, 0);
         break;
-      case 1: odometer.setXYT(7*TILE, 1*TILE, 270);
+      case 1:
+        odometer.setXYT(7 * TILE, 1 * TILE, 270);
         break;
-      case 2: odometer.setXYT(7*TILE, 7*TILE, 180);
+      case 2:
+        odometer.setXYT(7 * TILE, 7 * TILE, 180);
         break;
-      case 3: odometer.setXYT(1*TILE, 7*TILE, 90);
+      case 3:
+        odometer.setXYT(1 * TILE, 7 * TILE, 90);
     }
-    
-    Navigation nav = new Navigation(odometer);
-    nav.travelTo(LLx, LLy); //navigate to lower left of searching area
-    //TODO: tweak LLx and LLy
-    Sound.beep(); //beep when at lower left corner
-    
-    
+
+    Navigation nav = new Navigation(odometer, usDistance, usData);
+    nav.travelTo(LLx, LLy); // navigate to lower left of searching area
+    // TODO: tweak LLx and LLy
+    Sound.beep(); // beep when at lower left corner
+
+
   }
 
   private void find4Points() {
