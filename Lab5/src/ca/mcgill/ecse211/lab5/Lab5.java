@@ -17,6 +17,12 @@ public class Lab5 {
   public static final double TRACK = 13.3;
   public static final double TILE = 30.48;
 
+  // r, g, b in order
+  public static final double[] BLUE_COLOR = {0.19, 0.92, 0.34} ; //value of blue colour
+  public static final double[] GREEN_COLOR = {0.79, 0.59, 0.34}; //value of green colour
+  public static final double[] YELLOW_COLOR = {0.85, 0.52, 0.09}; //value of yellow colour
+  public static final double[] RED_COLOR = {0.98, 0.24, 0.07}; //value of red colour
+  
   public static final EV3LargeRegulatedMotor LEFT_MOTOR =
       new EV3LargeRegulatedMotor(LocalEV3.get().getPort("A"));
 
@@ -85,14 +91,11 @@ public class Lab5 {
       Thread odoDisplayThread = new Thread(EV3Display);
       CanCalibrator cc = new CanCalibrator(lightColor, lightData);
 
-      // the rgb for the color of the target can
-      double[] target = {0.6, 0.8, 0.58};
-
       odoThread.start();
       odoDisplayThread.start();
 
       while (buttonChoice != Button.ID_ESCAPE) {
-        cc.Calibrate(target); // take readings
+        cc.Calibrate(); // take readings
       }
 
       System.exit(0); // terminate program

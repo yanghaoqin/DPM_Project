@@ -20,10 +20,7 @@ public class Search extends Thread{
   private static final int LLy = 5; //lower left y coordinate of searching area, modify during demo
   private static final int URx = 7; //lower left x coordinate of searching area, modify during demo
   private static final int URy = 7; //lower left y coordinate of searching area, modify during demo
-  private static final double[] blue = {0.39, 1.38, 0.79} ; //value of blue colour
-  private static final double[] green = {1.0, 1.5, 0.5}; //value of green colour
-  private static final double[] yellow = {2.25, 1.66, 0.29}; //value of yellow colour
-  private static final double[] red = {2.84, 1.17, 0.58}; //value of red colour
+
   private static final int TR = 0; //colour of target can: must be changed during demo
   private static double[] threshold; //colour threshold to identify correct can
   private static final int CAN_THERE = 50; //value of us sensor when there is a can in front of it TODO: tweak in lab

@@ -1,6 +1,11 @@
 package ca.mcgill.ecse211.lab5;
 
 import lejos.robotics.SampleProvider;
+import ca.mcgill.ecse211.lab5.Lab5.*;
+import static ca.mcgill.ecse211.lab5.Lab5.BLUE_COLOR;
+import static ca.mcgill.ecse211.lab5.Lab5.YELLOW_COLOR;
+import static ca.mcgill.ecse211.lab5.Lab5.GREEN_COLOR;
+import static ca.mcgill.ecse211.lab5.Lab5.RED_COLOR;
 
 public class CanCalibrator {
 
@@ -9,6 +14,13 @@ public class CanCalibrator {
   private double std = 0;
   public static double[] mean = new double[3];
   public static double[] standard_deviation = new double[3];
+
+  // RGB indexes
+  private static final int RED_INDEX = 0;
+  private static final int GREEN_INDEX = 1;
+  private static final int BLUE_INDEX = 2;
+  private static final int YELLOW_INDEX = 3;
+
 
   /**
    * 
@@ -22,14 +34,48 @@ public class CanCalibrator {
     this.lightData = lightData;
   }
 
-  // RGB indexes
-  private final int RED_INDEX = 0;
-  private final int GREEN_INDEX = 1;
-  private final int BLUE_INDEX = 2;
+  /**
+   * This is the classifier.
+   * @param target
+   * @return 
+   */
+  public int Calibrate() {
+
+    // initialize array
+    double[] red_array = new double[100];
+    double[] green_array = new double[100];
+    double[] blue_array = new double[100];
+
+    // take initial reading
+    // record the computed mean for 100 times for rgb
+    for (int i = 0; i < 100; i++) {
+      // each array contains 100 values
+      red_array[i] = initialReading(RED_INDEX);
+      green_array[i] = initialReading(GREEN_INDEX);
+      blue_array[i] = initialReading(BLUE_INDEX);
+    }
+
+    // compute to find mean of the 100 means
+    // mean has only 3 values; r,g,b
+    mean[RED_INDEX] = Find_Mean(red_array);
+    mean[GREEN_INDEX] = Find_Mean(green_array);
+    mean[BLUE_INDEX] = Find_Mean(blue_array);
+
+    // find the standard deviation of each rgb array which contains 100 means
+    standard_deviation[RED_INDEX] = Find_Standard_Deviation(red_array, mean[RED_INDEX]);
+    standard_deviation[GREEN_INDEX] = Find_Standard_Deviation(green_array, mean[GREEN_INDEX]);
+    standard_deviation[BLUE_INDEX] = Find_Standard_Deviation(blue_array, mean[BLUE_INDEX]);
+
+    // normalize the mean to a range of 0 - 1
+    mean = Mean_Normalizer(mean[RED_INDEX], mean[GREEN_INDEX], mean[BLUE_INDEX]);
+
+    // determine which color
+
+  }
 
   /**
    * 
-   * This is a identifier. Take readings and determine whether can is the correct one.
+   * This is the overloaded method. Take readings and determine whether can is the correct one.
    * 
    * @param target
    * @return
@@ -144,6 +190,45 @@ public class CanCalibrator {
       return true;
     } else {
       return false;
+    }
+  }
+
+  /**
+   * Determines whether measured color is target color
+   * @param color
+   * @return int indicating color
+   */
+  private int isColor() {
+    if (Compare_Standard_Deviation(RED_COLOR[RED_INDEX], standard_deviation[RED_INDEX],
+        mean[RED_INDEX])
+        && Compare_Standard_Deviation(RED_COLOR[GREEN_INDEX], standard_deviation[GREEN_INDEX],
+            mean[GREEN_INDEX])
+        && Compare_Standard_Deviation(RED_COLOR[BLUE_INDEX], standard_deviation[BLUE_INDEX],
+            mean[BLUE_INDEX])) {
+      return RED_INDEX;
+    } else if(Compare_Standard_Deviation(RED_COLOR[RED_INDEX], standard_deviation[RED_INDEX],
+        mean[RED_INDEX])
+        && Compare_Standard_Deviation(RED_COLOR[GREEN_INDEX], standard_deviation[GREEN_INDEX],
+            mean[GREEN_INDEX])
+        && Compare_Standard_Deviation(RED_COLOR[BLUE_INDEX], standard_deviation[BLUE_INDEX],
+            mean[BLUE_INDEX])){
+      return GREEN_INDEX;
+    } else if(Compare_Standard_Deviation(RED_COLOR[RED_INDEX], standard_deviation[RED_INDEX],
+        mean[RED_INDEX])
+        && Compare_Standard_Deviation(RED_COLOR[GREEN_INDEX], standard_deviation[GREEN_INDEX],
+            mean[GREEN_INDEX])
+        && Compare_Standard_Deviation(RED_COLOR[BLUE_INDEX], standard_deviation[BLUE_INDEX],
+            mean[BLUE_INDEX])) {
+      return BLUE_INDEX;
+    } else if(Compare_Standard_Deviation(RED_COLOR[RED_INDEX], standard_deviation[RED_INDEX],
+        mean[RED_INDEX])
+        && Compare_Standard_Deviation(RED_COLOR[GREEN_INDEX], standard_deviation[GREEN_INDEX],
+            mean[GREEN_INDEX])
+        && Compare_Standard_Deviation(RED_COLOR[BLUE_INDEX], standard_deviation[BLUE_INDEX],
+            mean[BLUE_INDEX])) {
+      return YELLOW_INDEX;
+    } else {
+      return -1;
     }
   }
 
