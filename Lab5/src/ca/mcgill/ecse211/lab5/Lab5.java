@@ -2,7 +2,6 @@ package ca.mcgill.ecse211.lab5;
 
 // non-static imports
 import lejos.hardware.Button;
-
 import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.lcd.TextLCD;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
@@ -23,7 +22,7 @@ public class Lab5 {
 
   public static final EV3LargeRegulatedMotor RIGHT_MOTOR =
       new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
-  
+
   /**
    * The instance of the medium EV3 motor that controls the turning of the ultrasonic sensor. The
    * motor is connected to port C on the EV3 brick.
@@ -37,7 +36,7 @@ public class Lab5 {
   private static final Port CS_PORT = LocalEV3.get().getPort("S2");
 
   private static final Port COLOR_PORT = LocalEV3.get().getPort("S3");
-  
+
   private static final TextLCD LCD = LocalEV3.get().getTextLCD();
 
   // -----------------------------------------------------------------------------
@@ -50,8 +49,8 @@ public class Lab5 {
 
     Odometer odometer = Odometer.getOdometer(LEFT_MOTOR, RIGHT_MOTOR, TRACK, WHEEL_RAD);
 
-    Display odometryDisplay = new Display(LCD);
-   
+    Display EV3Display = new Display(LCD);
+
     // US sensor initialization
     @SuppressWarnings("resource")
     SensorModes usSensor = new EV3UltrasonicSensor(US_PORT);
@@ -73,52 +72,47 @@ public class Lab5 {
       LCD.clear();
       LCD.drawString("< Left  |  Right >", 0, 0);
       LCD.drawString("        |         ", 0, 1);
-      LCD.drawString("Falling |  Rising ", 0, 2);
-      LCD.drawString(" Edge   |   Edge  ", 0, 3);
+      LCD.drawString("   LS   |  Start  ", 0, 2);
+      LCD.drawString("  TEST  |  Search ", 0, 3);
       buttonChoice = Button.waitForAnyPress();
     } while (buttonChoice != Button.ID_LEFT && buttonChoice != Button.ID_RIGHT
         && buttonChoice != Button.ID_ESCAPE && buttonChoice != Button.ID_ENTER);
- 
-    if (buttonChoice == Button.ID_LEFT || buttonChoice == Button.ID_RIGHT) {
-      // Falling Edge or Rising Edge
 
-      UltrasonicLocalizer usloc = new UltrasonicLocalizer(buttonChoice, usDistance, usData, odometer);
-      
+    if (buttonChoice == Button.ID_LEFT) {
+      // LS TESTING
+
       Thread odoThread = new Thread(odometer);
-      Thread odoDisplayThread = new Thread(odometryDisplay);
-      Thread uslocThread = new Thread(usloc);
-      
+      Thread odoDisplayThread = new Thread(EV3Display);
+      CanCalibrator cc = new CanCalibrator(lightColor, lightData);
+
+      // the rgb for the color of the target can
+      double[] target = {0.6, 0.8, 0.58};
+
       odoThread.start();
       odoDisplayThread.start();
-      uslocThread.start(); 
-      //TODO: REMOVE WAIT FOR USER INPUT FROM LAB 4
-      if (Button.waitForAnyPress() == Button.ID_ESCAPE) { // wait for user confirmation
-        System.exit(0);
-      } else {
-        LightLocalizer lightloc = new LightLocalizer(cs, csData, odometer);
-        Thread lightlocThread = new Thread(lightloc);
-        lightlocThread.start();
+
+      while (buttonChoice != Button.ID_ESCAPE) {
+        cc.Calibrate(target); // take readings
       }
-      // LAB 4 CODE STOPS EXECUTING HERE
-      
+
+      System.exit(0); // terminate program
 
     } else {
-      System.exit(0);
+
     }
-    
-    // keep the program from ending unless esc button is pressed
+
+
+    // -----------------------------------------------------------------------------
+    // Lab 5 testing light sensor
+    // -----------------------------------------------------------------------------
+
     while (Button.waitForAnyPress() != Button.ID_ESCAPE) {
-      CanCalibrator cc = new CanCalibrator(lightColor, lightData);
-      double[] target = {0.6, 0.8, 0.58};
-      
-      Thread odoThread = new Thread(odometer);
-      Thread odoDisplayThread = new Thread(odometryDisplay);
-      odoThread.start();
-      odoDisplayThread.start();
-      while(buttonChoice != Button.ID_ESCAPE) {
-        cc.Calibrate(target);
-        }
     }
+
+    // -----------------------------------------------------------------------------
+    // Lab 5 testing light sensor
+    // -----------------------------------------------------------------------------
+
     System.exit(0); // exit program after esc pressed
   }
 
