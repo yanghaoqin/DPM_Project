@@ -10,7 +10,7 @@ import lejos.hardware.Sound;
 import lejos.robotics.SampleProvider;
 import ca.mcgill.ecse211.lab5.Navigation;
 
-public class LightLocalizer extends Thread {
+public class LightLocalizer {
 
   private Odometer odometer;
   private float[] lightData;
@@ -64,7 +64,7 @@ public class LightLocalizer extends Thread {
   }
   // assuming zero orientation is robot facing north
 
-  public void run() {
+  public void localize() {
 
     std = initialReading();
 

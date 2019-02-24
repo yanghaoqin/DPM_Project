@@ -12,7 +12,7 @@ import static ca.mcgill.ecse211.lab5.Lab5.RIGHT_MOTOR;
 import static ca.mcgill.ecse211.lab5.Lab5.TRACK;
 import static ca.mcgill.ecse211.lab5.Lab5.WHEEL_RAD;
 
-public class UltrasonicLocalizer extends Thread {
+public class UltrasonicLocalizer {
 
   private static final double THRESHOLD = 20;
   private static final double MARGIN = 7.5;
@@ -45,7 +45,7 @@ public class UltrasonicLocalizer extends Thread {
     RIGHT_MOTOR.setSpeed(TURN_SPEED);
   }
 
-  public void run() {
+  public void localize() {
 
     double dTheta = 0;
 

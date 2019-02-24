@@ -18,17 +18,19 @@ public class Lab5 {
   public static final double TILE = 30.48;
 
   // r, g, b in order
-  public static final double[] BLUE_COLOR = {0.19, 0.92, 0.34} ; //value of blue colour
-  public static final double[] GREEN_COLOR = {0.79, 0.59, 0.34}; //value of green colour
-  public static final double[] YELLOW_COLOR = {0.85, 0.52, 0.09}; //value of yellow colour
-  public static final double[] RED_COLOR = {0.98, 0.24, 0.07}; //value of red colour
-  
+  public static final double[] BLUE_COLOR = {0.19, 0.92, 0.34}; // value of blue colour
+  public static final double[] GREEN_COLOR = {0.79, 0.59, 0.34}; // value of green colour
+  public static final double[] YELLOW_COLOR = {0.85, 0.52, 0.09}; // value of yellow colour
+  public static final double[] RED_COLOR = {0.98, 0.24, 0.07}; // value of red colour
+
   public static final EV3LargeRegulatedMotor LEFT_MOTOR =
       new EV3LargeRegulatedMotor(LocalEV3.get().getPort("A"));
 
   public static final EV3LargeRegulatedMotor RIGHT_MOTOR =
       new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
 
+  public static boolean isColorDetection;
+  
   
   /**
    * The instance of the medium EV3 motor that controls the turning of the ultrasonic sensor. The
@@ -50,6 +52,7 @@ public class Lab5 {
   // Main Method
   // -----------------------------------------------------------------------------
 
+  @SuppressWarnings("deprecation")
   public static void main(String[] args) throws OdometerExceptions {
 
     int buttonChoice; // variable to record button clicked by user
@@ -83,17 +86,21 @@ public class Lab5 {
       LCD.drawString("  TEST  |  Search ", 0, 3);
       buttonChoice = Button.waitForAnyPress();
     } while (buttonChoice != Button.ID_LEFT && buttonChoice != Button.ID_RIGHT
-        && buttonChoice != Button.ID_ESCAPE && buttonChoice != Button.ID_ENTER);
+        && buttonChoice != Button.ID_ESCAPE);
 
     if (buttonChoice == Button.ID_LEFT) {
       // LS TESTING
 
+      isColorDetection = true;
+      
       Thread odoThread = new Thread(odometer);
-      Thread odoDisplayThread = new Thread(EV3Display);
+      Thread displayThread = new Thread(EV3Display);
       CanCalibrator cc = new CanCalibrator(lightColor, lightData);
+      ColorDetection cd = new ColorDetection(usDistance, usData, lightColor, lightData, LCD);
 
       odoThread.start();
-      odoDisplayThread.start();
+      displayThread.start();
+      cd.start();
 
       while (buttonChoice != Button.ID_ESCAPE) {
         cc.Calibrate(); // take readings
@@ -102,29 +109,38 @@ public class Lab5 {
       System.exit(0); // terminate program
 
     } else {
+
+      isColorDetection = false;
       
+      Thread odoThread = new Thread(odometer);
+      Thread displayThread = new Thread(EV3Display);
       
+      odoThread.start();
+      displayThread.start();
+      
+      do {
+        LCD.clear();
+        LCD.drawString("< Left  |  Right >", 0, 0);
+        LCD.drawString("        |         ", 0, 1);
+        LCD.drawString("Falling |  Rising ", 0, 2);
+        LCD.drawString(" Edge   |   Edge  ", 0, 3);
+        buttonChoice = Button.waitForAnyPress();
+      } while (buttonChoice != Button.ID_LEFT && buttonChoice != Button.ID_RIGHT
+          && buttonChoice != Button.ID_ESCAPE);
+      
+      UltrasonicLocalizer UL = new UltrasonicLocalizer(buttonChoice, usDistance, usData, odometer);
+      UL.localize();
+      
+      LightLocalizer LL = new LightLocalizer(lightColor, lightData, usDistance, usData, odometer);
+      LL.localize();
+
+      Search search = new Search(odometer, usDistance, usData, lightColor, lightData);
+      Thread searchThread = new Thread(search);
+      searchThread.start();
+
+      while (Button.waitForAnyPress() != Button.ID_ESCAPE) {
+      }
+      System.exit(0); // exit program after esc pressed
     }
-
-
-    // -----------------------------------------------------------------------------
-    // Lab 5 testing light sensor
-    // -----------------------------------------------------------------------------
-
-    while (Button.waitForAnyPress() != Button.ID_ESCAPE) {
-    }
-
-    // -----------------------------------------------------------------------------
-    // Lab 5 testing light sensor
-    // -----------------------------------------------------------------------------
-
-    System.exit(0); // exit program after esc pressed
   }
-
-  /**
-   * initial readings taken (100 times) and the average is used to distinguish between the wooden
-   * board and the black line. Each reading is amplified to enhance the sensitivity of the sensor
-   * 
-   * @return
-   */
 }
