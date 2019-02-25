@@ -14,19 +14,22 @@ import lejos.robotics.SampleProvider;
 import lejos.robotics.navigation.Navigator;
 import ca.mcgill.ecse211.lab5.Navigation;
 
-/*
- * import static ca.mcgill.ecse211.lab5.Lab5.SENSOR_MOTOR; import
- * ca.mcgill.ecse211.lab5.UltrasonicMotor;
+/**
+ * 
+ * @author Yinuo Wang
+ * @author Raymond Yang
+ * @author Tudor Gurau
+ *
  */
 public class Search extends Thread {
 
 
   private final int SCAN_TIME = 100;
   // {R, G, B} values based on in lab measurements and multiplied by 100
-  public static final int LLx = 1; // lower left x coordinate of searching area, modify during demo
-  public static final int LLy = 1; // lower left y coordinate of searching area, modify during demo
-  public static final int URx = 3; // lower left x coordinate of searching area, modify during demo
-  public static final int URy = 3; // lower left y coordinate of searching area, modify during demo
+  public static final int LLx = 2; // lower left x coordinate of searching area, modify during demo
+  public static final int LLy = 2; // lower left y coordinate of searching area, modify during demo
+  public static final int URx = 4; // lower left x coordinate of searching area, modify during demo
+  public static final int URy = 4 ; // lower left y coordinate of searching area, modify during demo
 
   private static final int RED_INDEX = 4;
   private static final int GREEN_INDEX = 2;
@@ -43,7 +46,10 @@ public class Search extends Thread {
   private SampleProvider usDistance;
   private float[] lightData;
   private SampleProvider lightColor;
+  private float[] csData;
+  private SampleProvider csColor;
   private int filterSum;
+  private double csfilterSum;
   private int std;
   private boolean isCan;
   private Navigation nav;
@@ -53,12 +59,14 @@ public class Search extends Thread {
   public static double distDisplay;
 
   public Search(Odometer odometer, SampleProvider usDistance, float[] usData,
-      SampleProvider lightColor, float[] lightData) {
+      SampleProvider lightColor, float[] lightData, SampleProvider csColor, float[] csData) {
     this.odometer = odometer;
     this.usData = usData;
     this.usDistance = usDistance;
     this.lightData = lightData;
     this.lightColor = lightColor;
+    this.csData = csData;
+    this.csColor = csColor;
     this.isCan = false;
     this.colorData = new double[4];
     nav = new Navigation(odometer, usDistance, usData);
@@ -84,11 +92,13 @@ public class Search extends Thread {
     boolean canFound = false;
     
     for (int y = LLy; y <= URy; y++) {
+    	int x = 0;
       
+    
       canFound = false;
       
       if ((y - LLy) % 2 == 0) {
-        for (int x = LLx; x <= URx; x++) {
+        for ( x = LLx; x <= URx; x++) {
           canFound = false;
           while (canFound == false) {
             isCan = nav.travelTo(x, y);
@@ -99,9 +109,10 @@ public class Search extends Thread {
             }
           }
         }
+        lineLocalRight(x, y); 
       } else {
         if ((y - LLy) % 2 == 1) {
-          for (int x = URx; x >= LLx; x--) {
+          for ( x = URx; x >= LLx; x--) {
             canFound = false;
             while (canFound == false) {
               isCan = nav.travelTo(x, y);
@@ -114,6 +125,9 @@ public class Search extends Thread {
           }
         }
       }
+
+  
+  	
     }
   }
 
@@ -155,6 +169,7 @@ public class Search extends Thread {
       Sound.beep();
       hitIt(true);
       nav.travelTo(URx, URy);
+      System.exit(0);
       return true;
     } else {
       // navigate to the next position
@@ -307,4 +322,108 @@ public class Search extends Thread {
   private static int convertAngle(double radius, double width, double angle) {
     return convertDistance(radius, Math.PI * width * angle / 360.0);
   }
+  /**
+	 * This method let the robot to approach the origin
+	 * and then backup for a longer speed to ensure that all four lines are included in the rotating radius 
+	 */
+	public void approachOrigin() {
+		// Turn 45 degree towards the origin
+		 RIGHT_MOTOR.rotate(convertAngle(Lab5.WHEEL_RAD, Lab5.TRACK, 45), true);
+	     LEFT_MOTOR.rotate(-convertAngle(Lab5.WHEEL_RAD, Lab5.TRACK, 45), false);
+		
+
+		LEFT_MOTOR.setSpeed(150);
+		RIGHT_MOTOR.setSpeed(150);
+		
+		csfilterSum = fetchSample();
+		// move forward past the origin until light sensor sees the line
+		while (csfilterSum > 0.38) {
+			csfilterSum = fetchSample();		
+			LEFT_MOTOR.forward();
+			RIGHT_MOTOR.forward();
+
+		}
+		
+		LEFT_MOTOR.stop(true);
+		RIGHT_MOTOR.stop();
+		Sound.beep();
+
+		// Move backwards so our origin is close to origin
+		// Always back more (-6) than it forwarded so the car center is ways at negative X and Y
+		// Consistent with later calculation
+		LEFT_MOTOR.rotate(convertDistance(Lab5.WHEEL_RAD, -13 - 6), true);
+		RIGHT_MOTOR.rotate(convertDistance(Lab5.WHEEL_RAD, -13 - 6), false);
+
+	}
+	private void lineLocalRight(int x, int y){
+		approachOrigin();
+
+		// Scan all four lines and record our angle
+  	int index = 0;
+	double lineData[] = new double[4];
+	
+		while (index < 4) {
+			LEFT_MOTOR.backward();
+			RIGHT_MOTOR.forward();
+			csfilterSum = fetchSample();
+			if (csfilterSum < 0.38 ) {
+				lineData[index] = odometer.getXYT()[2];  // Get theta value and store it inside the array by rising index
+				index++;
+				Sound.beep();
+			}
+		}
+
+		LEFT_MOTOR.stop(true);
+		RIGHT_MOTOR.stop();
+
+		double d_X, d_Y, Theta_X, Theta_Y;
+
+		// calculate our location from 0 using the calculated angles
+		Theta_Y = lineData[2] - lineData[0];
+		Theta_X = lineData[3] - lineData[1];
+		
+		// calculate the difference of angle on the odometer and it in reality
+		double d_theta = 90 - (lineData[2]-180)+ Theta_Y/2.0;  
+
+		d_X = -Math.abs(13 * Math.cos(Math.toRadians(Theta_Y / 2.0)));
+		d_Y = -Math.abs(13 * Math.cos(Math.toRadians(Theta_X / 2.0)));
+		
+	
+		// travel to origin to correct position
+		odometer.setXYT(d_X, d_Y, odometer.getXYT()[2]);
+		nav.travelTo(0.0, 0.0);
+
+		// if we are not facing 0.0 then turn ourselves so that we are	
+		if (odometer.getXYT()[2] <= 350 && odometer.getXYT()[2] >= 10.0) {
+			Sound.beep();
+			LEFT_MOTOR.setSpeed(100 / 2);
+			RIGHT_MOTOR.setSpeed(100 / 2);
+
+			// Current theta value plus the calculated error is the actual heading
+			// Then turn negatively (to the right) to offset the angle to zero
+			LEFT_MOTOR.rotate(-convertAngle(Lab5.WHEEL_RAD, Lab5.TRACK, odometer.getXYT()[2] + d_theta), true);
+			RIGHT_MOTOR.rotate(convertAngle(Lab5.WHEEL_RAD, Lab5.TRACK, odometer.getXYT()[2] + d_theta), false);
+		}
+		LEFT_MOTOR.stop(true);
+		RIGHT_MOTOR.stop();
+
+		//After localizing, initializing the odometer
+		odometer.setX((x-1)*Lab5.TILE);	
+				
+		odometer.setY(y*Lab5.TILE);
+  
+	}
+		private double fetchSample(){
+		csfilterSum = 0;
+	    // take 5 readings
+	    for (int i = 0; i < 5; i++) {
+	      // acquire sample data and read into array with no offset
+	      csColor.fetchSample(csData, 0);
+	      // amplify signal for increased sensitivity
+	      csfilterSum += csData[0] ;
+	    }
+	    // return an amplified average
+	    return csfilterSum / 5.0;
+
+	}
 }

@@ -127,7 +127,7 @@ public class Lab5 {
       
       LCD.clear();
       odoThread.start();
-      displayThread.start();
+ //     displayThread.start();
       
       UltrasonicLocalizer UL = new UltrasonicLocalizer(buttonChoice, usDistance, usData, odometer);
       UL.localize();
@@ -135,7 +135,7 @@ public class Lab5 {
       LightLocalizer LL = new LightLocalizer(cs, csData, usDistance, usData, odometer);
       LL.localize();
       
-      Search search = new Search(odometer, usDistance, usData, lightColor, lightData);
+      Search search = new Search(odometer, usDistance, usData, lightColor, lightData,cs, csData);
       Thread searchThread = new Thread(search);
       searchThread.start();
 

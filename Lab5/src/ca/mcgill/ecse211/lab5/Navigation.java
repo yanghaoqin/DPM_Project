@@ -273,6 +273,8 @@ public class Navigation  {
    */
   public void turnTo(double Theta) {
 
+	position = odo.getXYT();
+	  
     isNavigating = true; // update navigating status
 
     // smoother turn acceleration to avoid wheels slipping
