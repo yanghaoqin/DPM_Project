@@ -16,7 +16,7 @@ public class UltrasonicLocalizer {
 
   private static final double THRESHOLD = 20;
   private static final double MARGIN = 7.5;
-  private static final int TURN_SPEED = 100;
+  private static final int TURN_SPEED = 150;
   private static final int SMOOTH_ACCELERATION = 500;
   private static final double TURN_CIRCLE = 360.0;
   private static final int INITIAL_ANGLE = 0;

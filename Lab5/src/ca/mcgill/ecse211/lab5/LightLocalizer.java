@@ -4,6 +4,10 @@ import static ca.mcgill.ecse211.lab5.Lab5.LEFT_MOTOR;
 import static ca.mcgill.ecse211.lab5.Lab5.RIGHT_MOTOR;
 import static ca.mcgill.ecse211.lab5.Lab5.TRACK;
 import static ca.mcgill.ecse211.lab5.Lab5.WHEEL_RAD;
+import static ca.mcgill.ecse211.lab5.Search.LLx;
+import static ca.mcgill.ecse211.lab5.Search.LLy;
+import static ca.mcgill.ecse211.lab5.Search.URx;
+import static ca.mcgill.ecse211.lab5.Search.URy;
 import ca.mcgill.ecse211.odometer.Odometer;
 import ca.mcgill.ecse211.odometer.OdometerExceptions;
 import lejos.hardware.Sound;
@@ -20,8 +24,8 @@ public class LightLocalizer {
   private float filterSum;
 
   private static final int SC = 0; // starting corner, modify during demo
-  private static final int LLx = 5; // lower left x coordinate of searching area, modify during demo
-  private static final int LLy = 5; // lower left y coordinate of searching area, modify during demo
+//  private static final int LLx = 1; // lower left x coordinate of searching area, modify during demo
+//  private static final int LLy = 1; // lower left y coordinate of searching area, modify during demo
   private static final int SPEED = 150; // might need to change
   private static final double THRESHOLD = 0.75; // threshold for finding gridlines
   private static final double TURN_CIRCLE = 360.0;
@@ -56,8 +60,8 @@ public class LightLocalizer {
     this.down_y = 0;
     this.usDistance = usDistance;
     this.usData = usData;
-    LEFT_MOTOR.setAcceleration(SMOOTH_ACCELERATION);
-    RIGHT_MOTOR.setAcceleration(SMOOTH_ACCELERATION);
+//    LEFT_MOTOR.setAcceleration(SMOOTH_ACCELERATION);
+//    RIGHT_MOTOR.setAcceleration(SMOOTH_ACCELERATION);
 
     LEFT_MOTOR.resetTachoCount();
     RIGHT_MOTOR.resetTachoCount();
@@ -125,7 +129,7 @@ public class LightLocalizer {
     odometer.setX(-dx);
 
     travelTo(0, 0);
-    turnTo(6);
+    turnTo(0);
 
     switch (SC) { // depending on which corner we started on
       case 0:
@@ -141,16 +145,13 @@ public class LightLocalizer {
         odometer.setXYT(1 * TILE, 7 * TILE, 90);
     }
 
-    //Navigation nav = new Navigation(odometer, usDistance, usData);
-    travelTo(LLx, LLy); // navigate to lower left of searching area
+//    Navigation nav = new Navigation(odometer, usDistance, usData);
+//    travelTo(LLx, LLy); // navigate to lower left of searching area
     // TODO: tweak LLx and LLy
-    Sound.beep(); // beep when at lower left corner
-
-
+    Sound.beep(); // beep when at lower left corners
   }
 
   private void find4Points() {
-
     LEFT_MOTOR.rotate(convertAngle(WHEEL_RAD, TRACK, TURN_CIRCLE + 7), true);
     RIGHT_MOTOR.rotate(-convertAngle(WHEEL_RAD, TRACK, TURN_CIRCLE + 7), true);
     // robot does a 360
@@ -226,6 +227,10 @@ public class LightLocalizer {
 
     double[] position = odometer.getXYT(); // get current position data from odometer
 
+    // Fix error: no conversion from coordinate to distance in cm
+    x = x * TILE;
+    y = y * TILE;
+    
     // position[0] = x, position[1] = y, position[2] = theta
     double dx = x - position[0]; // displacement in x
     double dy = y - position[1]; // displacment in y

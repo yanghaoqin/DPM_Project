@@ -23,10 +23,10 @@ public class Search extends Thread {
 
   private final int SCAN_TIME = 100;
   // {R, G, B} values based on in lab measurements and multiplied by 100
-  private static final int LLx = 1; // lower left x coordinate of searching area, modify during demo
-  private static final int LLy = 1; // lower left y coordinate of searching area, modify during demo
-  private static final int URx = 4; // lower left x coordinate of searching area, modify during demo
-  private static final int URy = 4; // lower left y coordinate of searching area, modify during demo
+  public static final int LLx = 1; // lower left x coordinate of searching area, modify during demo
+  public static final int LLy = 1; // lower left y coordinate of searching area, modify during demo
+  public static final int URx = 3; // lower left x coordinate of searching area, modify during demo
+  public static final int URy = 3; // lower left y coordinate of searching area, modify during demo
 
   private static final int RED_INDEX = 4;
   private static final int GREEN_INDEX = 2;
@@ -34,7 +34,7 @@ public class Search extends Thread {
   private static final int YELLOW_INDEX = 3;
 
   private static final int TR = 1; // colour of target can: must be changed during demo
-  
+
   private static final double WHEEL_RAD = 2.15;
   private static final int SPEED = 100;
   public static final double CAN_EXISTS = 15; // distance to show there is a can at that
@@ -52,7 +52,7 @@ public class Search extends Thread {
   private Navigation nav;
   private double[] colorData;
   private CanCalibrator calibrator;
-  
+
   public static double distDisplay;
 
   public Search(Odometer odometer, SampleProvider usDistance, float[] usData,
@@ -84,96 +84,141 @@ public class Search extends Thread {
 
   public void run() {
     // scan grid
-    for (int y = LLy; y <= URy; y++) { 
+    boolean canFound = false;
+    
+    for (int y = LLy; y <= URy; y++) {
+      
+      canFound = false;
+      
       if ((y - LLy) % 2 == 0) {
         for (int x = LLx; x <= URx; x++) {
-          isCan = nav.travelTo(x, y);
-//          if (isCan()) {
-//            canFound();
-//          }
+          canFound = false;
+          while (canFound == false) {
+            isCan = nav.travelTo(x, y);
+            if (isCan) {
+              canFound = canFound();
+            } else {
+              canFound = true;
+            }
+          }
         }
       } else {
         if ((y - LLy) % 2 == 1) {
           for (int x = URx; x >= LLx; x--) {
-            isCan = nav.travelTo(x, y);
-//            if (isCan()) {
-//              canFound();
-//            }
+            canFound = false;
+            while (canFound == false) {
+              isCan = nav.travelTo(x, y);
+              if (isCan) {
+                canFound = canFound();
+              } else {
+                canFound = true;
+              }
+            }
           }
         }
       }
     }
   }
 
-  /**
-   * 
-   * @return
-   */
-  private boolean isCan() {
-    double distance = medianFilter();
-    if (distance < CAN_EXISTS) {
-      return true;
-    }
-    return false;
-  }
+  // /**
+  // *
+  // * @return
+  // */
+  // private boolean isCan() {
+  // double distance = medianFilter();
+  // if (distance < CAN_EXISTS) {
+  // Sound.beepSequenceUp();
+  //
+  // LEFT_MOTOR.rotate(convertDistance(WHEEL_RAD, 12), true);
+  // RIGHT_MOTOR.rotate(convertDistance(WHEEL_RAD, 12), false);
+  // return true;
+  // }
+  // return false;
+  // }
 
-  private void canFound() {
-    double[] red_array = new double[100]; // array for reds
-    double[] green_array = new double[100]; // array for greens
-    double[] blue_array = new double[100]; // array for blues
+  private boolean canFound() {
+    // double[] red_array = new double[100]; // array for reds
+    // double[] green_array = new double[100]; // array for greens
+    // double[] blue_array = new double[100]; // array for blues
 
     calibrator = new CanCalibrator(lightColor, lightData);
-    double starting_angle = odometer.getXYT()[2];
+    // double starting_angle = odometer.getXYT()[2];
+
+    LEFT_MOTOR.rotate(convertDistance(WHEEL_RAD, 10), true);
+    RIGHT_MOTOR.rotate(convertDistance(WHEEL_RAD, 10), false);
 
     // check if color reading is correct
-    boolean color = takeMeasurement(threshold);
+    int color = rotateSensorDetect();
 
-    if (color) {
+    LEFT_MOTOR.rotate(-convertDistance(WHEEL_RAD, 10), true);
+    RIGHT_MOTOR.rotate(-convertDistance(WHEEL_RAD, 10), false);
+
+    hitIt();
+
+    if (color == colorconvert(TR)) {
       // navigate to the end position
       Sound.beep();
       nav.travelTo(URx, URy);
       System.exit(0);
+      return true;
     } else {
       // navigate to the next position
       Sound.twoBeeps();
+      return false;
     }
   }
 
-  private boolean takeMeasurement(double[] targetColorThreshold) {
-    if (calibrator.Calibrate(targetColorThreshold)) {
-      SENSOR_MOTOR.rotateTo(0, false);
-      return true;
-      
-    } else {
-      SENSOR_MOTOR.rotate(-10, false);
-      int colorTime = 0;
-      int readTime = 0;
-      while ( readTime < 5) {
-        SENSOR_MOTOR.rotate(-10, false);
-        if(calibrator.Calibrate(targetColorThreshold)){
-        	colorTime++;
-        }
-        readTime++;
-        if(colorTime>2){
-        	return true;
-        }
-        
-      }
-      SENSOR_MOTOR.rotateTo(0, false);
-      hitIt();
-      return false;
+  private int colorconvert(int tr) {
+    switch (tr) {
+      case 1:
+        return 2;
+      case 2:
+        return 1;
+      case 3:
+        return 3;
+      case 4:
+        return 0;
     }
+    return -1;
+  }
+
+  private int rotateSensorDetect() {
+    int[] colorResult = new int[7];
+    for (int i = 0; i < 7; i++) {
+      colorResult[i] = calibrator.Calibrate();
+      Lab5.SENSOR_MOTOR.setAcceleration(300);
+      Lab5.SENSOR_MOTOR.setSpeed(300);
+      Lab5.SENSOR_MOTOR.rotate(30, false);
+    }
+    SENSOR_MOTOR.rotateTo(0, false);
+    Arrays.sort(colorResult);
+    int prev = colorResult[0];
+    int count = 1;
+    for (int i = 1; i < colorResult.length; i++) {
+      if (colorResult[i] == prev && colorResult[i] != -1) {
+        count++;
+        if (count > colorResult.length / 2 - 1) {
+          return colorResult[i];
+        }
+      } else {
+        count = 1;
+        prev = colorResult[i];
+      }
+    }
+    return -1;
   }
 
   /**
    * oh yeah
    */
   private void hitIt() {
-    LEFT_MOTOR.rotate(-convertDistance(WHEEL_RAD, 3), true);
-    LEFT_MOTOR.rotate(-convertDistance(WHEEL_RAD, 3), false);
-    SENSOR_MOTOR.setSpeed(SENSOR_MOTOR.getMaxSpeed());
-    SENSOR_MOTOR.setAcceleration(5000);
-    SENSOR_MOTOR.rotate(-120, false);
+    SENSOR_MOTOR.setSpeed(100);
+    SENSOR_MOTOR.setAcceleration(500);
+    
+//    SENSOR_MOTOR.setSpeed(SENSOR_MOTOR.getMaxSpeed());
+//    SENSOR_MOTOR.setAcceleration(5000);
+    
+    SENSOR_MOTOR.rotate(220, false);
     SENSOR_MOTOR.setSpeed(100);
     SENSOR_MOTOR.setAcceleration(500);
     SENSOR_MOTOR.rotateTo(0, false);

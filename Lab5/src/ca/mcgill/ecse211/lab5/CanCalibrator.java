@@ -115,7 +115,7 @@ public class CanCalibrator {
             mean[GREEN_INDEX])
         && Compare_Standard_Deviation(target[BLUE_INDEX], standard_deviation[BLUE_INDEX],
             mean[BLUE_INDEX])) {
-      return true;
+      return false;
     }
     return false;
   }
@@ -240,7 +240,7 @@ public class CanCalibrator {
    * @return
    */
   private double initialReading(int index) {
-    for (int i = 0; i < 30; i++) {
+    for (int i = 0; i < 10; i++) {
       // acquires sample data
       lightColor.fetchSample(lightData, 0);
       // place reading into corresponding place

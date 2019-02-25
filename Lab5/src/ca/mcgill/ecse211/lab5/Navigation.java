@@ -2,13 +2,14 @@ package ca.mcgill.ecse211.lab5;
 
 // non-static imports
 import ca.mcgill.ecse211.odometer.*;
+import lejos.hardware.Sound;
 import lejos.robotics.SampleProvider;
 // static imports from Lab3 class
 import static ca.mcgill.ecse211.lab5.Lab5.LEFT_MOTOR;
 import static ca.mcgill.ecse211.lab5.Lab5.RIGHT_MOTOR;
 import static ca.mcgill.ecse211.lab5.Lab5.TILE;
 import static ca.mcgill.ecse211.lab5.Search.CAN_EXISTS;
-//import static ca.mcgill.ecse211.lab5.Lab5.PATH;
+// import static ca.mcgill.ecse211.lab5.Lab5.PATH;
 import java.util.Arrays;
 
 /**
@@ -28,7 +29,7 @@ import java.util.Arrays;
  * @author Raymond Yang
  * @author Erica De Petrillo
  */
-public class Navigation /*extends Thread*/ {
+public class Navigation /* extends Thread */ {
 
   // -----------------------------------------------------------------------------
   // Constants
@@ -92,7 +93,7 @@ public class Navigation /*extends Thread*/ {
    * A value for motor acceleration that prevents the wheels from slipping on the demo floor by
    * accelerating and decelerating slowly
    */
-  private static final int SMOOTH_ACCELERATION = 400;
+  private static final int SMOOTH_ACCELERATION = 1000;
 
   /**
    * A value for motor acceleration that prevents the wheels from slipping on the demo floor by
@@ -137,11 +138,11 @@ public class Navigation /*extends Thread*/ {
   private volatile boolean isNavigating;
 
   private SampleProvider usDistance;
-  
+
   private float[] usData;
 
   private double distance;
-  
+
   // -----------------------------------------------------------------------------
   // Constructor
   // -----------------------------------------------------------------------------
@@ -168,15 +169,14 @@ public class Navigation /*extends Thread*/ {
    * The run() method that is called when the thread is started. The five coordinate points are used
    * in order as parameters of the {@code travelTo} function, which is called a total of five times.
    */
-  /*public void run() {
-
-    for (int[] inner : PATH) {
-      // inner[0]: X coordinate
-      // inner[1]: Y coordinate
-      travelTo(inner[0], inner[1]);
-    }
-
-  }*/
+  /*
+   * public void run() {
+   * 
+   * for (int[] inner : PATH) { // inner[0]: X coordinate // inner[1]: Y coordinate
+   * travelTo(inner[0], inner[1]); }
+   * 
+   * }
+   */
 
   // -----------------------------------------------------------------------------
   // Public Methods
@@ -251,7 +251,7 @@ public class Navigation /*extends Thread*/ {
     RIGHT_MOTOR.rotate(convertDistance(WHEEL_RAD, ds), true);
     LEFT_MOTOR.rotate(convertDistance(WHEEL_RAD, ds), true);
 
-    while(LEFT_MOTOR.isMoving() || RIGHT_MOTOR.isMoving()) {
+    while (LEFT_MOTOR.isMoving() || RIGHT_MOTOR.isMoving()) {
       distance = medianFilter();
       if (distance < CAN_EXISTS) {
         LEFT_MOTOR.stop(true);
@@ -259,7 +259,7 @@ public class Navigation /*extends Thread*/ {
         return true;
       }
     }
-    
+
     isNavigating = false; // update navigation status
     return false;
   }
@@ -311,7 +311,7 @@ public class Navigation /*extends Thread*/ {
   // -----------------------------------------------------------------------------
   // Private Methods
   // -----------------------------------------------------------------------------
-  
+
   /**
    * This is a median filter. The filter takes 5 consecutive readings from the ultrasonic sensor,
    * amplifies them to increase sensor sensitivity, sorts them, and picks the median to minimize the
@@ -329,7 +329,7 @@ public class Navigation /*extends Thread*/ {
     Arrays.sort(arr); // sort readingss
     return arr[2]; // take median value
   }
-  
+
   /**
    * This is a static method allows the conversion of a distance to the total rotation of each wheel
    * need to cover that distance.

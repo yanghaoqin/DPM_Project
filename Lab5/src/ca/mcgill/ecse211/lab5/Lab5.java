@@ -16,7 +16,7 @@ public class Lab5 {
   public static final double WHEEL_RAD = 2.15;
   public static final double TRACK = 13.3;
   public static final double TILE = 30.48;
-
+  
   // r, g, b in order
   public static final double[] BLUE_COLOR = {0.19, 0.40, 0.87}; // value of blue colour
   public static final double[] GREEN_COLOR = {0.35, 0.85, 0.39}; // value of green colour
@@ -115,9 +115,6 @@ public class Lab5 {
       Thread odoThread = new Thread(odometer);
       Thread displayThread = new Thread(EV3Display);
       
-      odoThread.start();
-      displayThread.start();
-      
       do {
         LCD.clear();
         LCD.drawString("< Left  |  Right >", 0, 0);
@@ -128,12 +125,16 @@ public class Lab5 {
       } while (buttonChoice != Button.ID_LEFT && buttonChoice != Button.ID_RIGHT
           && buttonChoice != Button.ID_ESCAPE);
       
-      UltrasonicLocalizer UL = new UltrasonicLocalizer(buttonChoice, usDistance, usData, odometer);
-      UL.localize();
+      LCD.clear();
+      odoThread.start();
+      displayThread.start();
       
-      LightLocalizer LL = new LightLocalizer(cs, csData, usDistance, usData, odometer);
-      LL.localize();
-
+//      UltrasonicLocalizer UL = new UltrasonicLocalizer(buttonChoice, usDistance, usData, odometer);
+//      UL.localize();
+//      
+//      LightLocalizer LL = new LightLocalizer(cs, csData, usDistance, usData, odometer);
+//      LL.localize();
+      
       Search search = new Search(odometer, usDistance, usData, lightColor, lightData);
       Thread searchThread = new Thread(search);
       searchThread.start();
