@@ -29,7 +29,7 @@ import java.util.Arrays;
  * @author Raymond Yang
  * @author Erica De Petrillo
  */
-public class Navigation /* extends Thread */ {
+public class Navigation  {
 
   // -----------------------------------------------------------------------------
   // Constants
@@ -40,14 +40,14 @@ public class Navigation /* extends Thread */ {
    * right wheel. Not imported from Lab3 because track needs to be tuned specifically for simple
    * navigation
    */
-  private static final double TRACK = 13.3;
+  //private static final double TRACK = 13.4;
 
   /**
    * The radius (in cm) of the left/right wheels of the EV3 robot. Wheel rad not imported from Lab3
    * class specifically for simple navigation adjustments. TWEAKING THIS VALUE SIGNIFICANTLY CHANGES
    * HOW MUCH OF AN ANGLE THE ROBOT TURNS.
    */
-  private static final double WHEEL_RAD = 2.2;
+  //private static final double WHEEL_RAD = 2.20;
 
   /**
    * A constant factor that can be applied to convert angular units in degrees to radians
@@ -99,7 +99,7 @@ public class Navigation /* extends Thread */ {
    * A value for motor acceleration that prevents the wheels from slipping on the demo floor by
    * accelerating and decelerating slowly
    */
-  private static final int TURN_ACCELERATION = 200;
+  private static final int TURN_ACCELERATION = 150;
 
   /**
    * A revolution of half of a circle in degrees
@@ -248,8 +248,8 @@ public class Navigation /* extends Thread */ {
     // equivalent as travelling straight. The boolean flag parameter indicates
     // whether method returns immediately, to allow simultaneous execution of both
     // rotate() methods. The method waits for the right motor to complete.
-    RIGHT_MOTOR.rotate(convertDistance(WHEEL_RAD, ds), true);
-    LEFT_MOTOR.rotate(convertDistance(WHEEL_RAD, ds), true);
+    RIGHT_MOTOR.rotate(convertDistance(Lab5.WHEEL_RAD, ds), true);
+    LEFT_MOTOR.rotate(convertDistance(Lab5.WHEEL_RAD, ds), true);
 
     while (LEFT_MOTOR.isMoving() || RIGHT_MOTOR.isMoving()) {
       distance = medianFilter();
@@ -284,14 +284,14 @@ public class Navigation /* extends Thread */ {
 
     if (minTheta > INITIAL_ANGLE && minTheta <= HALF_CIRCLE) {
       // angle is already minimum angle, robot should turn clockwise
-      RIGHT_MOTOR.rotate(-convertAngle(WHEEL_RAD, TRACK, minTheta), true);
-      LEFT_MOTOR.rotate(convertAngle(WHEEL_RAD, TRACK, minTheta), false);
+      RIGHT_MOTOR.rotate(-convertAngle(Lab5.WHEEL_RAD, Lab5.TRACK, minTheta), true);
+      LEFT_MOTOR.rotate(convertAngle(Lab5.WHEEL_RAD, Lab5.TRACK, minTheta), false);
     } else if (minTheta > HALF_CIRCLE && minTheta < FULL_CIRCLE) {
       // angle is not minimum angle, robot should turn counter-clockwise to the
       // complementary angle of a full circle 360 degrees
       minTheta = FULL_CIRCLE - minTheta;
-      RIGHT_MOTOR.rotate(convertAngle(WHEEL_RAD, TRACK, minTheta), true);
-      LEFT_MOTOR.rotate(-convertAngle(WHEEL_RAD, TRACK, minTheta), false);
+      RIGHT_MOTOR.rotate(convertAngle(Lab5.WHEEL_RAD, Lab5.TRACK, minTheta), true);
+      LEFT_MOTOR.rotate(-convertAngle(Lab5.WHEEL_RAD, Lab5.TRACK, minTheta), false);
     }
 
     isNavigating = false; // update navigation status

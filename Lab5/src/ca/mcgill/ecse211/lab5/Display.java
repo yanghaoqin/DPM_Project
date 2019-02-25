@@ -94,6 +94,13 @@ public class Display implements Runnable {
 
       DecimalFormat numberFormat = new DecimalFormat("######0.00");
 
+      // Print red, green, and blue information on display with specific format
+      // Format:
+      // --------------------
+      // R: #.## + #.##
+      // G: #.## + #.##
+      // B: #.## + #.##
+      // --------------------
       if (Lab5.isColorDetection == true) {
     	  lcd.drawString("RED: " + numberFormat.format(CanCalibrator.mean[0]) + " +"
     	            + numberFormat.format(CanCalibrator.standard_deviation[0]), 0, 3);
@@ -104,12 +111,15 @@ public class Display implements Runnable {
 
       } else {
 
-        // Print x,y, and theta information on display with specific format
+        // Print x, y, theta, red, green, and blue information on display with specific format
         // Format:
         // --------------------
         // x: #.##
         // y: #.##
         // T: #.##
+    	// R: #.## + #.##
+        // G: #.## + #.##
+        // B: #.## + #.##
         // --------------------
         
         lcd.drawString("X: " + numberFormat.format(position[0]), 0, 0);

@@ -136,13 +136,13 @@ public class LightLocalizer {
         odometer.setXYT(0 * TILE, 0 * TILE, 0);
         break;
       case 1:
-        odometer.setXYT(7 * TILE, 1 * TILE, 270);
+        odometer.setXYT(8 * TILE, 0 * TILE, 270);
         break;
       case 2:
-        odometer.setXYT(7 * TILE, 7 * TILE, 180);
+        odometer.setXYT(8 * TILE, 8 * TILE, 180);
         break;
       case 3:
-        odometer.setXYT(1 * TILE, 7 * TILE, 90);
+        odometer.setXYT(0 * TILE, 8 * TILE, 90);
     }
 
 //    Navigation nav = new Navigation(odometer, usDistance, usData);

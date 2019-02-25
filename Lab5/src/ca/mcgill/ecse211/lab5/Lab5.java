@@ -13,8 +13,8 @@ import ca.mcgill.ecse211.odometer.*;
 
 public class Lab5 {
 
-  public static final double WHEEL_RAD = 2.15;
-  public static final double TRACK = 13.3;
+  public static final double WHEEL_RAD = 2.16;
+  public static final double TRACK = 13.4;
   public static final double TILE = 30.48;
   
   // r, g, b in order
@@ -129,11 +129,11 @@ public class Lab5 {
       odoThread.start();
       displayThread.start();
       
-//      UltrasonicLocalizer UL = new UltrasonicLocalizer(buttonChoice, usDistance, usData, odometer);
-//      UL.localize();
-//      
-//      LightLocalizer LL = new LightLocalizer(cs, csData, usDistance, usData, odometer);
-//      LL.localize();
+      UltrasonicLocalizer UL = new UltrasonicLocalizer(buttonChoice, usDistance, usData, odometer);
+      UL.localize();
+      
+      LightLocalizer LL = new LightLocalizer(cs, csData, usDistance, usData, odometer);
+      LL.localize();
       
       Search search = new Search(odometer, usDistance, usData, lightColor, lightData);
       Thread searchThread = new Thread(search);

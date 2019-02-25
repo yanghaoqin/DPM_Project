@@ -25,18 +25,15 @@ public class Search extends Thread {
   // {R, G, B} values based on in lab measurements and multiplied by 100
   public static final int LLx = 1; // lower left x coordinate of searching area, modify during demo
   public static final int LLy = 1; // lower left y coordinate of searching area, modify during demo
-  public static final int URx = 4; // lower left x coordinate of searching area, modify during demo
-  public static final int URy = 4; // lower left y coordinate of searching area, modify during demo
+  public static final int URx = 3; // lower left x coordinate of searching area, modify during demo
+  public static final int URy = 3; // lower left y coordinate of searching area, modify during demo
 
   private static final int RED_INDEX = 4;
   private static final int GREEN_INDEX = 2;
   private static final int BLUE_INDEX = 1;
   private static final int YELLOW_INDEX = 3;
 
-  private static final int TR = 1; // colour of target can: must be changed during demo
-
-  private static final double WHEEL_RAD = 2.15;
-  private static final int SPEED = 100;
+  private static final int TR = 4; // colour of target can: must be changed during demo
   public static final double CAN_EXISTS = 15; // distance to show there is a can at that
                                               // intersection, TODO: tweak in lab
 
@@ -144,21 +141,20 @@ public class Search extends Thread {
     calibrator = new CanCalibrator(lightColor, lightData);
     // double starting_angle = odometer.getXYT()[2];
 
-    LEFT_MOTOR.rotate(convertDistance(WHEEL_RAD, 10), true);
-    RIGHT_MOTOR.rotate(convertDistance(WHEEL_RAD, 10), false);
+    LEFT_MOTOR.rotate(convertDistance(Lab5.WHEEL_RAD, 10), true);
+    RIGHT_MOTOR.rotate(convertDistance(Lab5.WHEEL_RAD, 10), false);
 
     // check if color reading is correct
     int color = rotateSensorDetect();
 
-    LEFT_MOTOR.rotate(-convertDistance(WHEEL_RAD, 9), true);
-    RIGHT_MOTOR.rotate(-convertDistance(WHEEL_RAD, 9), false);
+    LEFT_MOTOR.rotate(-convertDistance(Lab5.WHEEL_RAD, 9), true);
+    RIGHT_MOTOR.rotate(-convertDistance(Lab5.WHEEL_RAD, 9), false);
 
     if (color == colorconvert(TR)) {
       // navigate to the end position
       Sound.beep();
       hitIt(true);
       nav.travelTo(URx, URy);
-      System.exit(0);
       return true;
     } else {
       // navigate to the next position
