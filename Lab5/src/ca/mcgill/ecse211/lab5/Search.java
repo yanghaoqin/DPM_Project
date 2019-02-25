@@ -25,8 +25,8 @@ public class Search extends Thread {
   // {R, G, B} values based on in lab measurements and multiplied by 100
   public static final int LLx = 1; // lower left x coordinate of searching area, modify during demo
   public static final int LLy = 1; // lower left y coordinate of searching area, modify during demo
-  public static final int URx = 3; // lower left x coordinate of searching area, modify during demo
-  public static final int URy = 3; // lower left y coordinate of searching area, modify during demo
+  public static final int URx = 4; // lower left x coordinate of searching area, modify during demo
+  public static final int URy = 4; // lower left y coordinate of searching area, modify during demo
 
   private static final int RED_INDEX = 4;
   private static final int GREEN_INDEX = 2;
@@ -150,20 +150,20 @@ public class Search extends Thread {
     // check if color reading is correct
     int color = rotateSensorDetect();
 
-    LEFT_MOTOR.rotate(-convertDistance(WHEEL_RAD, 10), true);
-    RIGHT_MOTOR.rotate(-convertDistance(WHEEL_RAD, 10), false);
-
-    hitIt();
+    LEFT_MOTOR.rotate(-convertDistance(WHEEL_RAD, 9), true);
+    RIGHT_MOTOR.rotate(-convertDistance(WHEEL_RAD, 9), false);
 
     if (color == colorconvert(TR)) {
       // navigate to the end position
       Sound.beep();
+      hitIt(true);
       nav.travelTo(URx, URy);
       System.exit(0);
       return true;
     } else {
       // navigate to the next position
       Sound.twoBeeps();
+      hitIt();
       return false;
     }
   }
@@ -217,6 +217,16 @@ public class Search extends Thread {
     
 //    SENSOR_MOTOR.setSpeed(SENSOR_MOTOR.getMaxSpeed());
 //    SENSOR_MOTOR.setAcceleration(5000);
+    
+    SENSOR_MOTOR.rotate(220, false);
+    SENSOR_MOTOR.setSpeed(100);
+    SENSOR_MOTOR.setAcceleration(500);
+    SENSOR_MOTOR.rotateTo(0, false);
+  }
+  
+  private void hitIt(boolean flag) {
+    SENSOR_MOTOR.setSpeed(SENSOR_MOTOR.getMaxSpeed());
+    SENSOR_MOTOR.setAcceleration(5000);
     
     SENSOR_MOTOR.rotate(220, false);
     SENSOR_MOTOR.setSpeed(100);

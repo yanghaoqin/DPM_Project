@@ -18,7 +18,7 @@ import ca.mcgill.ecse211.odometer.*;
 
 
 public class ColorDetection extends Thread {
-	
+	 
 	 private static final double CAN_EXISTS = 10;
 	 private float[] usData;
 	 private SampleProvider usDistance;
