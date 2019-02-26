@@ -89,23 +89,23 @@ public class Search extends Thread {
 
   public void run() {
     // scan grid
-    boolean canFound = false;
+    boolean targetFound = false;
     
     for (int y = LLy; y <= URy; y++) {
     	int x = 0;
       
     
-      canFound = false;
+      targetFound = false;
       
       if ((y - LLy) % 2 == 0) {
         for ( x = LLx; x <= URx; x++) {
-          canFound = false;
-          while (canFound == false) {
+          targetFound = false;
+          while (targetFound == false) {
             isCan = nav.travelTo(x, y);
             if (isCan) {
-              canFound = canFound();
+              targetFound = canFound();
             } else {
-              canFound = true;
+              targetFound = true;
             }
           }
         }
@@ -113,13 +113,13 @@ public class Search extends Thread {
       } else {
         if ((y - LLy) % 2 == 1) {
           for ( x = URx; x >= LLx; x--) {
-            canFound = false;
-            while (canFound == false) {
+            targetFound = false;
+            while (targetFound == false) {
               isCan = nav.travelTo(x, y);
               if (isCan) {
-                canFound = canFound();
+                targetFound = canFound();
               } else {
-                canFound = true;
+                targetFound = true;
               }
             }
           }
@@ -131,22 +131,15 @@ public class Search extends Thread {
     }
   }
 
-  // /**
-  // *
-  // * @return
-  // */
-  // private boolean isCan() {
-  // double distance = medianFilter();
-  // if (distance < CAN_EXISTS) {
-  // Sound.beepSequenceUp();
-  //
-  // LEFT_MOTOR.rotate(convertDistance(WHEEL_RAD, 12), true);
-  // RIGHT_MOTOR.rotate(convertDistance(WHEEL_RAD, 12), false);
-  // return true;
-  // }
-  // return false;
-  // }
-
+ /**
+  * This class defines the reaction that the robot meets the can.
+  * 1. It approach the can by 10cm to offset the "same distance" from the US sensor to the target
+  * 2. The color sensor arm reads around the can to identify the color
+  * 3. If the read color is same as the target (target found), then the can will be hit to the side
+  * the robot then travels to the end point and finishes the task.
+  * 4. If the read color is different, the can got pushed away and the cart continues to the next point  
+  * @return boolean Indicating whether the target is found (whether the cart needs to still traverse the map in a loop)
+  */
   private boolean canFound() {
     // double[] red_array = new double[100]; // array for reds
     // double[] green_array = new double[100]; // array for greens
@@ -179,6 +172,12 @@ public class Search extends Thread {
     }
   }
 
+  /**
+   * In our color detection section we used a set of indexes which is different than the requirement
+   * Thus this is to convert the requirement index into our index (RGBY = 0123) for color identification
+   * @param tr requirement indexes (RGBY = 4213)
+   * @return int The color index we defined (RGBY = 0123)
+   */
   private int colorconvert(int tr) {
     switch (tr) {
       case 1:
@@ -193,15 +192,28 @@ public class Search extends Thread {
     return -1;
   }
 
+  /**
+	 * This method polls the color sensor reading, comparing it with the color RGB theoretical value
+	 * Every time it completed, the sensor rotate 30 degree ccw to take the next reading
+	 * The 7 readings are stored in an array and then the majority color index is found in the array.
+	 * This index is returned as the read color
+	 * @return int index of the classified
+	 */
   private int rotateSensorDetect() {
+	  // create an array of size 7 to store 7 readings
     int[] colorResult = new int[7];
+    //Test 7 times
     for (int i = 0; i < 7; i++) {
-      colorResult[i] = calibrator.Calibrate();
+	  // Poll, process RGB, and classify
+	  colorResult[i] = calibrator.Calibrate();
+	  //Move Color sensor motor
       Lab5.SENSOR_MOTOR.setAcceleration(300);
       Lab5.SENSOR_MOTOR.setSpeed(300);
       Lab5.SENSOR_MOTOR.rotate(30, false);
     }
+    // Color sensor motor return to Original position
     SENSOR_MOTOR.rotateTo(0, false);
+    //Finding the majority element of the array (-1 is excluded since it is not a legitimate color)
     Arrays.sort(colorResult);
     int prev = colorResult[0];
     int count = 1;
@@ -209,18 +221,19 @@ public class Search extends Thread {
       if (colorResult[i] == prev && colorResult[i] != -1) {
         count++;
         if (count > colorResult.length / 2 - 1) {
-          return colorResult[i];
+          return colorResult[i];   // Find the majority value (being detected after enough times and return that index)
         }
       } else {
         count = 1;
         prev = colorResult[i];
       }
     }
-    return -1;
+    return -1;   // No majority or no legit values to return
   }
 
   /**
-   * oh yeah
+   * This method slowly pushes away the can so that the point is cleared up
+   * This method will be called when the can detected is not the target
    */
   private void hitIt() {
     SENSOR_MOTOR.setSpeed(100);
@@ -235,6 +248,12 @@ public class Search extends Thread {
     SENSOR_MOTOR.rotateTo(0, false);
   }
   
+  /**
+   * This method is overloaded.
+   * A boolean flag will be taken in as signature, indicating that the target is found
+   * Thus there is no need to continue on the searching routine
+   * The motor arm will smash the can out of the way (since the rest of the map will not be traversed)
+   */
   private void hitIt(boolean flag) {
     SENSOR_MOTOR.setSpeed(SENSOR_MOTOR.getMaxSpeed());
     SENSOR_MOTOR.setAcceleration(5000);
@@ -322,15 +341,21 @@ public class Search extends Thread {
   private static int convertAngle(double radius, double width, double angle) {
     return convertDistance(radius, Math.PI * width * angle / 360.0);
   }
+  
+  
   /**
 	 * This method let the robot to approach the origin
-	 * and then backup for a longer speed to ensure that all four lines are included in the rotating radius 
+	 * 1. travel in +y direction until meets a line, when encounters a grid line, back off a bit
+	 * 2. travel in +x direction until meets a line, when encounters a grid line, back off a bit
+	 * 3. This two moving instruction ensures that even if the heading of the robot is problematic
+	 * the method will still take the bot to a reasonable location so the bot will be able to 
+	 * scan all 4 lines when doing light localization
 	 */
 	public void approachOrigin() {
 		
-		csfilterSum = fetchSample();
+		csfilterSum = fetchFilteredSample();
 		while(true){
-			csfilterSum = fetchSample();
+			csfilterSum = fetchFilteredSample();
 			if(csfilterSum < 0.38){
 				LEFT_MOTOR.stop(true);
 				RIGHT_MOTOR.stop();
@@ -351,9 +376,9 @@ public class Search extends Thread {
 		nav.turnTo(0);
 
 		
-		csfilterSum = fetchSample();
+		csfilterSum = fetchFilteredSample();
 		while(true){
-			csfilterSum = fetchSample();
+			csfilterSum = fetchFilteredSample();
 			if(csfilterSum < 0.38){
 				LEFT_MOTOR.stop(true);
 				RIGHT_MOTOR.stop();
@@ -375,6 +400,15 @@ public class Search extends Thread {
 		// Always back more (-6) than it forwarded so the car center is ways at negative X and Y
 		// Consistent with later calculation
 	}
+	
+	
+	/**
+	 * This method is to do light localization every 2 lines at the last X point
+	 * X, y coordinates are taken in as the variable to update the odometer
+	 * 
+	 * @param x 
+	 * @param y
+	 */
 	private void lineLocalRight(int x, int y){
 		approachOrigin();
 
@@ -385,7 +419,7 @@ public class Search extends Thread {
 		while (index < 4) {
 			LEFT_MOTOR.backward();
 			RIGHT_MOTOR.forward();
-			csfilterSum = fetchSample();
+			csfilterSum = fetchFilteredSample();
 			if (csfilterSum < 0.38 ) {
 				lineData[index] = odometer.getXYT()[2];  // Get theta value and store it inside the array by rising index
 				index++;
@@ -427,7 +461,7 @@ public class Search extends Thread {
 		LEFT_MOTOR.stop(true);
 		RIGHT_MOTOR.stop();
 
-		//After localizing, initializing the odometer
+		//After localizing, set the odometer to the current gridline
 		odometer.setX((x-1)*Lab5.TILE);	
 				
 		odometer.setY(y*Lab5.TILE);
@@ -435,7 +469,15 @@ public class Search extends Thread {
 		odometer.setTheta(0);
   
 	}
-		private double fetchSample(){
+	
+	 /**
+	   * This is a mean filter. The filter takes 5 consecutive readings from the light sensor (the one at the back of the cart),
+	   * amplifies them to increase sensor sensitivity, calculate their mean value and return the mean as the reading
+	   * The value is the reflect intensity value when the sensor is in RED mode
+	   * 
+	   * @return the mean of the five readings of intensities
+	   */
+		private double fetchFilteredSample(){
 		csfilterSum = 0;
 	    // take 5 readings
 	    for (int i = 0; i < 5; i++) {
