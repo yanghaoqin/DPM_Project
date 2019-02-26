@@ -40,7 +40,7 @@ public class Search extends Thread {
   public static final double CAN_EXISTS = 15; // distance to show there is a can at that
                                               // intersection, TODO: tweak in lab
 
-  private static double[] threshold; // colour threshold to identify correct can
+  //private static double[] threshold; // colour threshold to identify correct can
   private Odometer odometer; // odometer
   private float[] usData;
   private SampleProvider usDistance;
@@ -58,6 +58,21 @@ public class Search extends Thread {
 
   public static double distDisplay;
 
+  /**
+   * Constructor of the search class
+   * Takes in the sample provider and the data array of 3 sensors (us,
+   * light sensor for detecting color and light sensor for localization) and the odometer.
+   * An instance of Navigation class using the odometer and Us data is also created so that 
+   * during search the methods from Navigation classes can be implemented
+   * 
+   * @param odometer
+   * @param usDistance
+   * @param usData
+   * @param lightColor
+   * @param lightData
+   * @param csColor
+   * @param csData
+   */
   public Search(Odometer odometer, SampleProvider usDistance, float[] usData,
       SampleProvider lightColor, float[] lightData, SampleProvider csColor, float[] csData) {
     this.odometer = odometer;
@@ -71,24 +86,31 @@ public class Search extends Thread {
     this.colorData = new double[4];
     nav = new Navigation(odometer, usDistance, usData);
 
-    // determine which color from TR given
-    switch (TR) {
-      case 1: // TR = 1 --> blue can
-        threshold = BLUE_COLOR;
-        break;
-      case 2: // TR = 2 --> green can
-        threshold = GREEN_COLOR;
-        break;
-      case 3: // TR = 3 --> yellow can
-        threshold = YELLOW_COLOR;
-        break;
-      case 4: // TR = 4 --> red can
-        threshold = RED_COLOR;
-    }
+//    // determine which color from TR given
+//    switch (TR) {
+//      case 1: // TR = 1 --> blue can
+//        threshold = BLUE_COLOR;
+//        break;
+//      case 2: // TR = 2 --> green can
+//        threshold = GREEN_COLOR;
+//        break;
+//      case 3: // TR = 3 --> yellow can
+//        threshold = YELLOW_COLOR;
+//        break;
+//      case 4: // TR = 4 --> red can
+//        threshold = RED_COLOR;
+//    }
   }
 
+  /**
+   * This method runs the entity of the class. The robot will traverse the entire searching area in a zig-zag manner,
+   * reaching every points. On the way it will detect the distance to identify the can. After a can is presented, 
+   * it will use the sensor motor to rotate the light sensor around the can for 7 readings. Then based on whether the can met is
+   * the target, corresponding reactions will be performed.
+   * In the end of every even rows the cart will perform a light localization to offset the errors.
+   */
   public void run() {
-    // scan grid
+    
     boolean targetFound = false;
     
     for (int y = LLy; y <= URy; y++) {
