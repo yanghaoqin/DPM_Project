@@ -99,7 +99,12 @@ public class Search extends Thread {
       
       if ((y - LLy) % 2 == 0) {
         for ( x = LLx; x <= URx; x++) {
-          canFound = false;
+  try{
+    Thread.sleep(150);
+  } catch (Exception e) {
+    // do nothing
+  }
+  canFound = false;
           while (canFound == false) {
             isCan = nav.travelTo(x, y);
             if (isCan) {
@@ -113,7 +118,13 @@ public class Search extends Thread {
       } else {
         if ((y - LLy) % 2 == 1) {
           for ( x = URx; x >= LLx; x--) {
-            canFound = false;
+try{
+    Thread.sleep(150);
+  } catch (Exception e) {
+    // do nothing
+  }            
+
+canFound = false;
             while (canFound == false) {
               isCan = nav.travelTo(x, y);
               if (isCan) {
