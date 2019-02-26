@@ -174,7 +174,7 @@ public class UltrasonicLocalizer {
    * robot turns to face 0 degrees. Refer to conventions specified in the documentation for the
    * UltrasonicLocalizer class.
    */
-  public void run() {
+  public void localize() {
 
     // Stores the change in theta value required for localization
     double dTheta = 0;
