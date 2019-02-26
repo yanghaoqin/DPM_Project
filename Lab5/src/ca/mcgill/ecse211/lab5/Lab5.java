@@ -11,7 +11,18 @@ import lejos.hardware.sensor.*;
 import lejos.robotics.SampleProvider;
 import ca.mcgill.ecse211.odometer.*;
 
+/**
+ * The main class that controls all the threads and execution of functions. Motors and sensors are
+ * initialized here. Constants are declared here.
+ *
+ * @author Team 23
+ */
 public class Lab5 {
+
+  /**
+   * Size of one tile in cm
+   */
+  public static final double TILE = 30.48;
 
   /**
    * A constant factor that can be applied to convert angle units in radians to degrees
@@ -219,7 +230,7 @@ public class Lab5 {
       UL.localize();
 
       // light sensor localization
-      LightLocalizer LL = new LightLocalizer(cs, csData, usDistance, usData, odometer);
+      LightLocalizer LL = new LightLocalizer(cs, csData, odometer);
       LL.localize();
 
       // search method
@@ -227,6 +238,7 @@ public class Lab5 {
       Thread searchThread = new Thread(search);
       searchThread.start();
 
+      // exit when esc pressed
       while (Button.waitForAnyPress() != Button.ID_ESCAPE) {
       }
       System.exit(0); // exit program after esc pressed

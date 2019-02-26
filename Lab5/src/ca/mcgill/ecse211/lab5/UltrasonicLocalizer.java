@@ -19,9 +19,7 @@ import static ca.mcgill.ecse211.lab5.Lab5.SMOOTH_ACCELERATION;
 
 /**
  * <p>
- * This class implements localization with the ultrasonic sensor. This class extends the Thread
- * class to allow simultaneous execution, so that other classes can work alongside this class.
- * Helper methods are added at the end to make conversions easier.
+ * This class implements localization with the ultrasonic sensor.
  * 
  * <p>
  * The robot is to be placed at the lower left tile of the demo platform, on the 45 degree line
@@ -123,11 +121,6 @@ public class UltrasonicLocalizer {
    * odometer data values
    */
   private Odometer odometer;
-
-  /**
-   * Array to store data retrieved from the odometer.
-   */
-  private double[] odoData;
 
   /**
    * An object to read sensor data in a uniform way (Meter-Kilogram-Second units)

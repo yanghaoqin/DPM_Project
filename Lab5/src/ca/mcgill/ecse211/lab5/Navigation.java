@@ -2,14 +2,11 @@ package ca.mcgill.ecse211.lab5;
 
 // non-static imports
 import ca.mcgill.ecse211.odometer.*;
-import lejos.hardware.Sound;
 import lejos.robotics.SampleProvider;
-// static imports from Lab3 class
 import static ca.mcgill.ecse211.lab5.Lab5.LEFT_MOTOR;
 import static ca.mcgill.ecse211.lab5.Lab5.RIGHT_MOTOR;
 import static ca.mcgill.ecse211.lab5.Lab5.TILE;
 import static ca.mcgill.ecse211.lab5.Search.CAN_EXISTS;
-// import static ca.mcgill.ecse211.lab5.Lab5.PATH;
 import java.util.Arrays;
 
 /**
@@ -29,7 +26,7 @@ import java.util.Arrays;
  * @author Raymond Yang
  * @author Erica De Petrillo
  */
-public class Navigation  {
+public class Navigation {
 
   // -----------------------------------------------------------------------------
   // Constants
@@ -40,19 +37,14 @@ public class Navigation  {
    * right wheel. Not imported from Lab3 because track needs to be tuned specifically for simple
    * navigation
    */
-  //private static final double TRACK = 13.4;
+  // private static final double TRACK = 13.4;
 
   /**
    * The radius (in cm) of the left/right wheels of the EV3 robot. Wheel rad not imported from Lab3
    * class specifically for simple navigation adjustments. TWEAKING THIS VALUE SIGNIFICANTLY CHANGES
    * HOW MUCH OF AN ANGLE THE ROBOT TURNS.
    */
-  //private static final double WHEEL_RAD = 2.20;
-
-  /**
-   * A constant factor that can be applied to convert angular units in degrees to radians
-   */
-  private static final double TO_RAD = Math.PI / 180.0;
+  // private static final double WHEEL_RAD = 2.20;
 
   /**
    * A constant factor that can be applied to convert angular units in radians to degrees
@@ -63,11 +55,6 @@ public class Navigation  {
    * The speed at which the robot moves straight (in deg/sec)
    */
   private static final int FWDSPEED = 150;
-
-  /**
-   * The speed at which the robot turns in a stationary fashion (in deg/sec)
-   */
-  private static final int TURNSPEED = 150;
 
   /**
    * Angle correction for Quadrant 1 and 4. Arctan returns the correct angle and the only adjustment
@@ -90,18 +77,6 @@ public class Navigation  {
   private static final int CENTER = 0;
 
   /**
-   * A value for motor acceleration that prevents the wheels from slipping on the demo floor by
-   * accelerating and decelerating slowly
-   */
-  private static final int SMOOTH_ACCELERATION = 1000;
-
-  /**
-   * A value for motor acceleration that prevents the wheels from slipping on the demo floor by
-   * accelerating and decelerating slowly
-   */
-  private static final int TURN_ACCELERATION = 150;
-
-  /**
    * A revolution of half of a circle in degrees
    */
   private static final int HALF_CIRCLE = 180;
@@ -116,8 +91,6 @@ public class Navigation  {
    */
   private static final int INITIAL_ANGLE = 0;
 
-  private static final double threshold = 1;
-  
   // -----------------------------------------------------------------------------
   // Class Variables
   // -----------------------------------------------------------------------------
@@ -201,7 +174,7 @@ public class Navigation  {
    * @param y - the y coordinate with the robot as the origin (0,0)
    */
   public boolean travelTo(double x, double y) {
-    
+
     // convert input coordinates x and y into distances in cm
     x = x * TILE;
     y = y * TILE;
@@ -238,8 +211,8 @@ public class Navigation  {
     turnTo(dTheta); // robot turns at minimum angle
 
     // smooth acceleration so that wheels do not slip
-//    RIGHT_MOTOR.setAcceleration(SMOOTH_ACCELERATION);
-//    LEFT_MOTOR.setAcceleration(SMOOTH_ACCELERATION);
+    // RIGHT_MOTOR.setAcceleration(SMOOTH_ACCELERATION);
+    // LEFT_MOTOR.setAcceleration(SMOOTH_ACCELERATION);
 
     // sets both motors to forward speed
     RIGHT_MOTOR.setSpeed(FWDSPEED);
@@ -252,7 +225,7 @@ public class Navigation  {
     // rotate() methods. The method waits for the right motor to complete.
     RIGHT_MOTOR.rotate(convertDistance(Lab5.WHEEL_RAD, ds), true);
     LEFT_MOTOR.rotate(convertDistance(Lab5.WHEEL_RAD, ds), true);
-    
+
     while (LEFT_MOTOR.isMoving() || RIGHT_MOTOR.isMoving()) {
       distance = medianFilter();
       if (distance < CAN_EXISTS) {
@@ -264,17 +237,16 @@ public class Navigation  {
 
     isNavigating = false; // update navigation status
 
-    
+
     try {
       Thread.sleep(500);
-    }
-    catch(Exception e) {
-      
+    } catch (Exception e) {
+
     }
 
-//    odo.setX(x);
-//    odo.setY(y);
-    
+    // odo.setX(x);
+    // odo.setY(y);
+
     return false;
 
   }
@@ -288,13 +260,13 @@ public class Navigation  {
    */
   public void turnTo(double Theta) {
 
-	position = odo.getXYT();
-	  
+    position = odo.getXYT();
+
     isNavigating = true; // update navigating status
 
     // smoother turn acceleration to avoid wheels slipping
-//    LEFT_MOTOR.setAcceleration(TURN_ACCELERATION);
-//    RIGHT_MOTOR.setAcceleration(TURN_ACCELERATION);
+    // LEFT_MOTOR.setAcceleration(TURN_ACCELERATION);
+    // RIGHT_MOTOR.setAcceleration(TURN_ACCELERATION);
 
     // ensure angle is positive and within 360
     double minTheta = ((Theta - position[2]) + FULL_CIRCLE) % FULL_CIRCLE;
