@@ -15,7 +15,9 @@ import lejos.robotics.navigation.Navigator;
 import ca.mcgill.ecse211.lab5.Navigation;
 
 /**
- * 
+ * This is the search class. It drives the cart through a zig zag path to reach all the point by sequence.
+ * When encounter a can on the bisect of the lines. It reads the can using the rotational arm of the light sensor, process and 
+ * judge the color, then push away the can directly thus the avoidance is not necessary.
  * @author Yinuo Wang
  * @author Raymond Yang
  * @author Tudor Gurau
@@ -136,7 +138,6 @@ public class Search extends Thread {
             }
           }
         }
-//        lineLocalRight(x, y, 0);
       } else {
         if ((y - LLy) % 2 == 1) {
 
@@ -157,7 +158,6 @@ public class Search extends Thread {
               }
             }
           }
-//          lineLocalRight(x, y, 1);
         }
       }
 
@@ -178,26 +178,29 @@ public class Search extends Thread {
    *         traverse the map in a loop)
    */
   private boolean canFound() {
-    // double[] red_array = new double[100]; // array for reds
-    // double[] green_array = new double[100]; // array for greens
-    // double[] blue_array = new double[100]; // array for blues
-
+ 
+	// Create a instance of CanCalibrator class
     calibrator = new CanCalibrator(lightColor, lightData);
-    // double starting_angle = odometer.getXYT()[2];
 
+    //approach the can
     LEFT_MOTOR.rotate(convertDistance(Lab5.WHEEL_RAD, 10), true);
     RIGHT_MOTOR.rotate(convertDistance(Lab5.WHEEL_RAD, 10), false);
 
     // check if color reading is correct
     int color = rotateSensorDetect();
 
+    //back off the can to push the can away
     LEFT_MOTOR.rotate(-convertDistance(Lab5.WHEEL_RAD, 6), true);
     RIGHT_MOTOR.rotate(-convertDistance(Lab5.WHEEL_RAD, 6), false);
 
     if (color == colorconvert(TR)) {
       // navigate to the end position
       Sound.beep();
+      
+      // hit away the can REAL HARD!!
       hitIt(true);
+      
+      //Finish the search routine
       nav.travelTo(URx, URy);
       System.exit(0);
       return true;
@@ -319,22 +322,7 @@ public class Search extends Thread {
     return (int) ((180.0 * distance) / (Math.PI * radius));
   }
 
-  /**
-   * This is a static method that converts the angle needed to turn at a corner to the equivalent
-   * total rotation. This method first converts the degrees of rotation, radius of wheels, and width
-   * of robot to distance needed to cover by the wheel, then the method calls another static method
-   * in process to convert distance to the number of degrees of rotation.
-   * 
-   * @param radius - the radius of the wheels
-   * @param width - the track of the robot
-   * @param angle - the angle for the turn
-   * @return an int indicating the total rotation sufficient for wheel to cover turn angle
-   */
-  private static int convertAngle(double radius, double width, double angle) {
-    return convertDistance(radius, Math.PI * width * angle / 360.0);
-  }
-
-
+ 
   /**
    * This method let the robot to approach the origin 1. travel in +y direction until meets a line,
    * when encounters a grid line, back off a bit 2. travel in +x direction until meets a line, when

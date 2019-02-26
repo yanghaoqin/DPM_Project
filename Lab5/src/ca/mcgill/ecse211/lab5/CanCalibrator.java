@@ -6,6 +6,15 @@ import static ca.mcgill.ecse211.lab5.Lab5.YELLOW_COLOR;
 import static ca.mcgill.ecse211.lab5.Lab5.GREEN_COLOR;
 import static ca.mcgill.ecse211.lab5.Lab5.RED_COLOR;
 
+/**
+ * This class reads the color value. Process it through mean and stdev calculation. 
+ * Then the value is compared with the threshold to determine which color it is or
+ * it is the target color.
+ * @author Antoine Wang
+ * @author Erica de Petrillo
+ * @author Raymond Yang
+ * 
+ */
 public class CanCalibrator {
 
   private SampleProvider lightColor;
@@ -23,10 +32,11 @@ public class CanCalibrator {
 
   /**
    * 
-   * This is the constructor
+   * This is the constructor of the can Calibrator class. To create an instance of the can Calibrator class, the sample
+   * provider and the array for storing the reading of the sensor is taken in.
    * 
-   * @param lightColor
-   * @param lightData
+   * @param lightColor Sampleprovider of the light sensor
+   * @param lightData array to store the data
    */
   public CanCalibrator(SampleProvider lightColor, float[] lightData) {
     this.lightColor = lightColor;
@@ -35,8 +45,12 @@ public class CanCalibrator {
 
   /**
    * This is the classifier.
-   * @param target
-   * @return 
+   * The method Calibrate takes no input. It calls the initialReading() method to retrieve the value of the color reading
+   * Then the value is processed by finding the mean value of R,G and B readings.
+   * Also the standard deviation is later calculated and then the filtered RGB reading is normalized with in the range of 0-1;
+   * At the end, the isColor() method is called. The calculated value is compared with the theoretical threshold to return the integer
+   * value representing the color index
+   * @return int corresponding color index
    */
   public int Calibrate() {
 
@@ -74,10 +88,11 @@ public class CanCalibrator {
 
   /**
    * 
-   * This is the overloaded method. Take readings and determine whether can is the correct one.
+   * This is the overloaded classifier method. This method takes in an array of rgb value which is the 
+   * pre-defined theoretical threshold. Then the processed RGB data is compared. A boolean will be returned if the color matched
    * 
-   * @param target
-   * @return
+   * @param target Theoretical threshold color RGB value
+   * @return boolean whether the read color corresponding to the target threshold
    */
   public boolean Calibrate(double[] target) {
 
@@ -109,6 +124,7 @@ public class CanCalibrator {
     // normalize the mean to a range of 0 - 1
     mean = Mean_Normalizer(mean[RED_INDEX], mean[GREEN_INDEX], mean[BLUE_INDEX]);
 
+    // compare the read color value to the target threshold, also compare the stdev to eliminate false readings
     if (Compare_Standard_Deviation(target[RED_INDEX], standard_deviation[RED_INDEX],
         mean[RED_INDEX])
         && Compare_Standard_Deviation(target[GREEN_INDEX], standard_deviation[GREEN_INDEX],
@@ -123,9 +139,10 @@ public class CanCalibrator {
   /**
    * 
    * Compute the mean
+   * Sum up all values and then divide by the sample size to remove outlier readings
    * 
-   * @param color_array
-   * @return
+   * @param color_array samples from the color sensor
+   * @return double the mean of the reading
    */
   private double Find_Mean(double[] color_array) {
     double mean = 0;
@@ -139,10 +156,11 @@ public class CanCalibrator {
   /**
    * 
    * Compute the standard deviation
-   * 
-   * @param color_array
-   * @param mean
-   * @return
+   * Takes in the mean value and the samples
+   * Using the sample standard deviation formula to compute the standard deviation
+   * @param color_array sample data point
+   * @param mean average value
+   * @return double standard deviation value of the data set (for a single color reading, like R or G)
    */
   private double Find_Standard_Deviation(double[] color_array, double mean) {
     double stdr_dev = 0;
@@ -158,8 +176,8 @@ public class CanCalibrator {
   }
 
   /**
-   * 
    * A method to normalize the values to a range from 0 to 1
+   * Divide the RGB value with the euclidian distance.
    * 
    * @param red
    * @param green
@@ -176,13 +194,13 @@ public class CanCalibrator {
   }
 
   /**
-   * 
    * Find out whether the target value is within 2 standard deviations of the measured readings
-   * 
-   * @param target
-   * @param strd_dev
-   * @param mean
-   * @return
+   * If yes, then the color we read can be decided as the target color
+   * Or the read color is defined as a different color
+   * @param target threshold for a certain color
+   * @param strd_dev stdev of a certain color's data set
+   * @param mean mean of a certain color's data set
+   * @return boolean whether the color is considered "different"
    */
   private boolean Compare_Standard_Deviation(double target, double strd_dev, double mean) {
     if (Math.abs(mean - target) < Math.abs(mean - 2 * strd_dev)) {
@@ -193,9 +211,9 @@ public class CanCalibrator {
   }
 
   /**
-   * Determines whether measured color is target color
-   * @param color
-   * @return int indicating color
+   * Determines whether measured color is target color by determining whether the values lies in
+   * 2 stdev
+   * @return int color judged (R,G,B or Y)
    */
   private int isColor() {
     if (Compare_Standard_Deviation(YELLOW_COLOR[RED_INDEX], standard_deviation[RED_INDEX],
@@ -234,10 +252,10 @@ public class CanCalibrator {
 
   /**
    * 
-   * Take initial readings
+   * Take initial readings (10 times), compute the mean of the 10 readings and return as one filtered datapoint
    * 
-   * @param index
-   * @return
+   * @param index Index of the color array (r=0, g=1, b=2)
+   * @return mean
    */
   private double initialReading(int index) {
     for (int i = 0; i < 10; i++) {
