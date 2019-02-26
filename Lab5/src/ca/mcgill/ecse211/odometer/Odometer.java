@@ -186,13 +186,14 @@ public class Odometer extends OdometerData implements Runnable {
 			double radTheta = (leftDistance - rightDistance) / TRACK;
 
 			// update heading
-			Theta += radTheta;
 
 			// compute x, y component of displacement
 			// sin and cos uses radian
-			double dX = Math.sin(Theta) * dDisp;
-			double dY = Math.cos(Theta) * dDisp;
+			double dX = Math.sin(Theta + radTheta / 2.0) * dDisp;
+			double dY = Math.cos(Theta + radTheta / 2.0) * dDisp;
 
+			Theta += radTheta;
+			
 			// Update odometer values with new calculated values
 			// theta is in degrees
 			odo.update(dX, dY, radTheta * TO_DEG);

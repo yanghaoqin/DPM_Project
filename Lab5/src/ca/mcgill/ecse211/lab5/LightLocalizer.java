@@ -1,6 +1,7 @@
 package ca.mcgill.ecse211.lab5;
 
 import static ca.mcgill.ecse211.lab5.Lab5.LEFT_MOTOR;
+import static ca.mcgill.ecse211.lab5.Lab5.TILE;
 import static ca.mcgill.ecse211.lab5.Lab5.RIGHT_MOTOR;
 import static ca.mcgill.ecse211.lab5.Lab5.TRACK;
 import static ca.mcgill.ecse211.lab5.Lab5.WHEEL_RAD;
@@ -40,7 +41,6 @@ public class LightLocalizer {
   private static final int Q1Q4COR = 90;
   private static final int Q2Q3COR = 270;
   private static final int CENTER = 0;
-  public static final double TILE = 30.48;
   private double std;
   private double left_x;
   private double right_x;

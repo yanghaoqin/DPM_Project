@@ -62,7 +62,7 @@ public class Navigation  {
   /**
    * The speed at which the robot moves straight (in deg/sec)
    */
-  private static final int FWDSPEED = 250;
+  private static final int FWDSPEED = 150;
 
   /**
    * The speed at which the robot turns in a stationary fashion (in deg/sec)
@@ -201,7 +201,7 @@ public class Navigation  {
    * @param y - the y coordinate with the robot as the origin (0,0)
    */
   public boolean travelTo(double x, double y) {
-
+    
     // convert input coordinates x and y into distances in cm
     x = x * TILE;
     y = y * TILE;
@@ -238,8 +238,8 @@ public class Navigation  {
     turnTo(dTheta); // robot turns at minimum angle
 
     // smooth acceleration so that wheels do not slip
-    RIGHT_MOTOR.setAcceleration(SMOOTH_ACCELERATION);
-    LEFT_MOTOR.setAcceleration(SMOOTH_ACCELERATION);
+//    RIGHT_MOTOR.setAcceleration(SMOOTH_ACCELERATION);
+//    LEFT_MOTOR.setAcceleration(SMOOTH_ACCELERATION);
 
     // sets both motors to forward speed
     RIGHT_MOTOR.setSpeed(FWDSPEED);
@@ -272,6 +272,9 @@ public class Navigation  {
       
     }
 
+//    odo.setX(x);
+//    odo.setY(y);
+    
     return false;
 
   }
@@ -290,8 +293,8 @@ public class Navigation  {
     isNavigating = true; // update navigating status
 
     // smoother turn acceleration to avoid wheels slipping
-    LEFT_MOTOR.setAcceleration(TURN_ACCELERATION);
-    RIGHT_MOTOR.setAcceleration(TURN_ACCELERATION);
+//    LEFT_MOTOR.setAcceleration(TURN_ACCELERATION);
+//    RIGHT_MOTOR.setAcceleration(TURN_ACCELERATION);
 
     // ensure angle is positive and within 360
     double minTheta = ((Theta - position[2]) + FULL_CIRCLE) % FULL_CIRCLE;

@@ -28,8 +28,8 @@ public class Search extends Thread {
   // {R, G, B} values based on in lab measurements and multiplied by 100
   public static final int LLx = 1; // lower left x coordinate of searching area, modify during demo
   public static final int LLy = 1; // lower left y coordinate of searching area, modify during demo
-  public static final int URx = 3; // lower left x coordinate of searching area, modify during demo
-  public static final int URy = 3; // lower left y coordinate of searching area, modify during demo
+  public static final int URx = 4; // lower left x coordinate of searching area, modify during demo
+  public static final int URy = 4; // lower left y coordinate of searching area, modify during demo
 
   private static final int RED_INDEX = 4;
   private static final int GREEN_INDEX = 2;
@@ -115,10 +115,10 @@ public class Search extends Thread {
     for (int y = LLy; y <= URy; y++) {
       int x = 0;
 
-
       targetFound = false;
-
+      
       if ((y - LLy) % 2 == 0) {
+        
         for (x = LLx; x <= URx; x++) {
           try {
             Thread.sleep(150);
@@ -127,6 +127,7 @@ public class Search extends Thread {
           }
           targetFound = false;
           while (targetFound == false) {
+            
             isCan = nav.travelTo(x, y);
             if (isCan) {
               targetFound = canFound();
@@ -135,9 +136,10 @@ public class Search extends Thread {
             }
           }
         }
-        lineLocalRight(x, y, 0);
+//        lineLocalRight(x, y, 0);
       } else {
         if ((y - LLy) % 2 == 1) {
+
           for (x = URx; x >= LLx; x--) {
             try {
               Thread.sleep(150);
@@ -146,8 +148,8 @@ public class Search extends Thread {
             }
             targetFound = false;
             while (targetFound == false) {
-
               isCan = nav.travelTo(x, y);
+
               if (isCan) {
                 targetFound = canFound();
               } else {
@@ -155,7 +157,7 @@ public class Search extends Thread {
               }
             }
           }
-          lineLocalRight(x, y, 1);
+//          lineLocalRight(x, y, 1);
         }
       }
 
@@ -189,8 +191,8 @@ public class Search extends Thread {
     // check if color reading is correct
     int color = rotateSensorDetect();
 
-    LEFT_MOTOR.rotate(-convertDistance(Lab5.WHEEL_RAD, 7), true);
-    RIGHT_MOTOR.rotate(-convertDistance(Lab5.WHEEL_RAD, 7), false);
+    LEFT_MOTOR.rotate(-convertDistance(Lab5.WHEEL_RAD, 6), true);
+    RIGHT_MOTOR.rotate(-convertDistance(Lab5.WHEEL_RAD, 6), false);
 
     if (color == colorconvert(TR)) {
       // navigate to the end position
