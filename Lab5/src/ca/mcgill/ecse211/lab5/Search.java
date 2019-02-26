@@ -126,8 +126,8 @@ public class Search extends Thread {
   } catch (Exception e) {
     // do nothing
   }
-  canFound = false;
-          while (canFound == false) {
+  targetFound = false;
+          while (targetFound == false) {
             isCan = nav.travelTo(x, y);
             if (isCan) {
               targetFound = canFound();
@@ -145,8 +145,8 @@ try{
   } catch (Exception e) {
     // do nothing
   }            
-canFound = false;
-            while (canFound == false) {
+targetFound = false;
+            while (targetFound == false) {
 
               isCan = nav.travelTo(x, y);
               if (isCan) {
