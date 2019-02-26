@@ -26,17 +26,17 @@ public class Search extends Thread {
 
   private final int SCAN_TIME = 100;
   // {R, G, B} values based on in lab measurements and multiplied by 100
-  public static final int LLx = 2; // lower left x coordinate of searching area, modify during demo
-  public static final int LLy = 2; // lower left y coordinate of searching area, modify during demo
-  public static final int URx = 4; // lower left x coordinate of searching area, modify during demo
-  public static final int URy = 4 ; // lower left y coordinate of searching area, modify during demo
+  public static final int LLx = 1; // lower left x coordinate of searching area, modify during demo
+  public static final int LLy = 1; // lower left y coordinate of searching area, modify during demo
+  public static final int URx = 3; // lower left x coordinate of searching area, modify during demo
+  public static final int URy = 3 ; // lower left y coordinate of searching area, modify during demo
 
   private static final int RED_INDEX = 4;
   private static final int GREEN_INDEX = 2;
   private static final int BLUE_INDEX = 1;
   private static final int YELLOW_INDEX = 3;
 
-  private static final int TR = 4; // colour of target can: must be changed during demo
+  private static final int TR = 1; // colour of target can: must be changed during demo
   public static final double CAN_EXISTS = 15; // distance to show there is a can at that
                                               // intersection, TODO: tweak in lab
 
@@ -327,33 +327,53 @@ public class Search extends Thread {
 	 * and then backup for a longer speed to ensure that all four lines are included in the rotating radius 
 	 */
 	public void approachOrigin() {
-		// Turn 45 degree towards the origin
-		 RIGHT_MOTOR.rotate(convertAngle(Lab5.WHEEL_RAD, Lab5.TRACK, 45), true);
-	     LEFT_MOTOR.rotate(-convertAngle(Lab5.WHEEL_RAD, Lab5.TRACK, 45), false);
-		
-
-		LEFT_MOTOR.setSpeed(150);
-		RIGHT_MOTOR.setSpeed(150);
 		
 		csfilterSum = fetchSample();
-		// move forward past the origin until light sensor sees the line
-		while (csfilterSum > 0.38) {
-			csfilterSum = fetchSample();		
+		while(true){
+			csfilterSum = fetchSample();
+			if(csfilterSum < 0.38){
+				LEFT_MOTOR.stop(true);
+				RIGHT_MOTOR.stop();
+				Sound.beep();
+				break;
+		}else{
+			LEFT_MOTOR.setSpeed(150);
+			RIGHT_MOTOR.setSpeed(150);
 			LEFT_MOTOR.forward();
 			RIGHT_MOTOR.forward();
 
+			}
 		}
+		LEFT_MOTOR.rotate(-convertDistance(Lab5.WHEEL_RAD, 16), true);
+		RIGHT_MOTOR.rotate(-convertDistance(Lab5.WHEEL_RAD, 16), false);
+
 		
-		LEFT_MOTOR.stop(true);
-		RIGHT_MOTOR.stop();
-		Sound.beep();
+		nav.turnTo(0);
+
+		
+		csfilterSum = fetchSample();
+		while(true){
+			csfilterSum = fetchSample();
+			if(csfilterSum < 0.38){
+				LEFT_MOTOR.stop(true);
+				RIGHT_MOTOR.stop();
+				Sound.beep();
+				break;
+		}else{
+			LEFT_MOTOR.setSpeed(150);
+			RIGHT_MOTOR.setSpeed(150);
+			LEFT_MOTOR.forward();
+			RIGHT_MOTOR.forward();
+
+			}
+		}
+
+		LEFT_MOTOR.rotate(-convertDistance(Lab5.WHEEL_RAD, 16), true);
+		RIGHT_MOTOR.rotate(-convertDistance(Lab5.WHEEL_RAD, 16), false);
 
 		// Move backwards so our origin is close to origin
 		// Always back more (-6) than it forwarded so the car center is ways at negative X and Y
 		// Consistent with later calculation
-		LEFT_MOTOR.rotate(convertDistance(Lab5.WHEEL_RAD, -13 - 6), true);
-		RIGHT_MOTOR.rotate(convertDistance(Lab5.WHEEL_RAD, -13 - 6), false);
-
 	}
 	private void lineLocalRight(int x, int y){
 		approachOrigin();
@@ -411,6 +431,8 @@ public class Search extends Thread {
 		odometer.setX((x-1)*Lab5.TILE);	
 				
 		odometer.setY(y*Lab5.TILE);
+		nav.turnTo(-6.8);
+		odometer.setTheta(0);
   
 	}
 		private double fetchSample(){

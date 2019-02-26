@@ -127,7 +127,7 @@ public class Lab5 {
       
       LCD.clear();
       odoThread.start();
- //     displayThread.start();
+      displayThread.start();
       
       UltrasonicLocalizer UL = new UltrasonicLocalizer(buttonChoice, usDistance, usData, odometer);
       UL.localize();
