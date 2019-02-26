@@ -90,7 +90,7 @@ public class Lab5 {
 
     if (buttonChoice == Button.ID_LEFT) {
       // LS TESTING
-
+/*
       isColorDetection = true;
       
       Thread odoThread = new Thread(odometer);
@@ -105,7 +105,11 @@ public class Lab5 {
       while (buttonChoice != Button.ID_ESCAPE) {
         cc.Calibrate(); // take readings
       }
-
+*/
+      UltrasonicLocalizer UL = new UltrasonicLocalizer(buttonChoice, usDistance, usData, odometer);
+      
+      Navigation nav = new Navigation(odometer, usDistance, usData);
+      nav.turnTo(90);
       System.exit(0); // terminate program
 
     } else {
@@ -127,7 +131,7 @@ public class Lab5 {
       
       LCD.clear();
       odoThread.start();
-      displayThread.start();
+      //displayThread.start();
       
       UltrasonicLocalizer UL = new UltrasonicLocalizer(buttonChoice, usDistance, usData, odometer);
       UL.localize();

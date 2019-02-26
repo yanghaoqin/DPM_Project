@@ -116,6 +116,8 @@ public class Navigation  {
    */
   private static final int INITIAL_ANGLE = 0;
 
+  private static final double threshold = 1;
+  
   // -----------------------------------------------------------------------------
   // Class Variables
   // -----------------------------------------------------------------------------
@@ -250,7 +252,7 @@ public class Navigation  {
     // rotate() methods. The method waits for the right motor to complete.
     RIGHT_MOTOR.rotate(convertDistance(Lab5.WHEEL_RAD, ds), true);
     LEFT_MOTOR.rotate(convertDistance(Lab5.WHEEL_RAD, ds), true);
-
+    
     while (LEFT_MOTOR.isMoving() || RIGHT_MOTOR.isMoving()) {
       distance = medianFilter();
       if (distance < CAN_EXISTS) {
@@ -261,7 +263,17 @@ public class Navigation  {
     }
 
     isNavigating = false; // update navigation status
+
+    
+    try {
+      Thread.sleep(500);
+    }
+    catch(Exception e) {
+      
+    }
+
     return false;
+
   }
 
   /**
