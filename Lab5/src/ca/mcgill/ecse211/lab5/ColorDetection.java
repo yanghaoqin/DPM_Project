@@ -27,6 +27,7 @@ import ca.mcgill.ecse211.odometer.*;
  * then the program is ready to read another color.
  * 
  * @author Yinuo Antoine Wang
+ * @author Yunhao Hu
  *
  */
 
@@ -137,7 +138,7 @@ public class ColorDetection extends Thread {
 			if (colorResult[i] == prev && colorResult[i] != -1){
 				count ++;
 				if(count > colorResult.length / 2 -1 ) {
-					return colorResult[i];  // Find the majority value (existed enough times and return that index)
+					return colorResult[i];  // Find the majority value (being detected after enough times and return that index)
 					}
 			}else{
 				count = 1;
