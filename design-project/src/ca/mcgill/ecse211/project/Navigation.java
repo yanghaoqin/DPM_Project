@@ -241,7 +241,7 @@ public class Navigation extends Thread {
     LEFT_MOTOR.setAcceleration(TURN_ACCELERATION);
     RIGHT_MOTOR.setAcceleration(TURN_ACCELERATION);
     
-    position[2] = odo.getXYT[2]; //get current theta value
+    position[2] = odo.getXYT()[2]; //get current theta value
 
     // ensure angle is positive and within 360
     double minTheta = ((Theta - position[2]) + FULL_CIRCLE) % FULL_CIRCLE;

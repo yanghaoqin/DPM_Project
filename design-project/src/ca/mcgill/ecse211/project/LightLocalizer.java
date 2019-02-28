@@ -1,4 +1,4 @@
-package ca.mcgill.ecse211.localization;
+package ca.mcgill.ecse211.project;
 
 import lejos.hardware.Sound;
 
@@ -8,8 +8,8 @@ import lejos.hardware.sensor.EV3ColorSensor;
 import lejos.hardware.sensor.SensorMode;
 import ca.mcgill.ecse211.odometer.*;
 //import ca.mcgill.ecse211.localization.*;
-import ca.mcgill.ecse211.navigation.*;
-import ca.mcgill.ecse211.lab4.*;
+//import ca.mcgill.ecse211.navigation.*;
+import ca.mcgill.ecse211.project.*;
 
 /**
  * 
@@ -43,7 +43,7 @@ public class LightLocalizer {
 
 		idColour = lightSensor.getRedMode(); // set the sensor light to red
 		lineData = new double[4];
-		navigation = new Navigation(odometer, leftMotor, rightMotor);
+		navigation = new Navigation(odometer);
 	}
 
 	/**
@@ -103,8 +103,8 @@ public class LightLocalizer {
 			leftMotor.setSpeed(ROTATION_SPEED / 2);
 			rightMotor.setSpeed(ROTATION_SPEED / 2);
 
-			leftMotor.rotate(-convertAngle(DPM_Lab4.WHEEL_RAD, DPM_Lab4.TRACK, odometer.getXYT()[2] + d_theta), true);
-			rightMotor.rotate(convertAngle(DPM_Lab4.WHEEL_RAD, DPM_Lab4.TRACK, odometer.getXYT()[2] + d_theta), false);
+			leftMotor.rotate(-convertAngle(project.WHEEL_RAD, project.TRACK, odometer.getXYT()[2] + d_theta), true);
+			rightMotor.rotate(convertAngle(project.WHEEL_RAD, project.TRACK, odometer.getXYT()[2] + d_theta), false);
 		}
 		leftMotor.stop(true);
 		rightMotor.stop();
@@ -136,8 +136,8 @@ public class LightLocalizer {
 		Sound.beep();
 
 		// Move backwards so our origin is close to origin
-		leftMotor.rotate(convertDistance(DPM_Lab4.WHEEL_RAD, -SENSOR_LENGTH-6), true);
-		rightMotor.rotate(convertDistance(DPM_Lab4.WHEEL_RAD, -SENSOR_LENGTH-6), false);
+		leftMotor.rotate(convertDistance(project.WHEEL_RAD, -SENSOR_LENGTH-6), true);
+		rightMotor.rotate(convertDistance(project.WHEEL_RAD, -SENSOR_LENGTH-6), false);
 
 	}
 

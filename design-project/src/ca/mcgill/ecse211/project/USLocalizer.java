@@ -1,11 +1,11 @@
-package ca.mcgill.ecse211.localization;
+package ca.mcgill.ecse211.project;
 
 import lejos.hardware.Sound;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.robotics.SampleProvider;
-import ca.mcgill.ecse211.navigation.*;
+//import ca.mcgill.ecse211.navigation.*;
 import ca.mcgill.ecse211.odometer.*;
-import ca.mcgill.ecse211.lab4.*;
+import ca.mcgill.ecse211.project.*;
 /**
  * 
  * @author Tudor Gurau
@@ -115,8 +115,8 @@ public class USLocalizer {
 
 		// rotate robot to the theta = 0.0 using turning angle and we account for small
 		// error
-		leftMotor.rotate(-convertAngle(DPM_Lab4.WHEEL_RAD, DPM_Lab4.TRACK, turningAngle), true);
-		rightMotor.rotate(convertAngle(DPM_Lab4.WHEEL_RAD, DPM_Lab4.TRACK, turningAngle), false);
+		leftMotor.rotate(-convertAngle(project.WHEEL_RAD, project.TRACK, turningAngle), true);
+		rightMotor.rotate(convertAngle(project.WHEEL_RAD, project.TRACK, turningAngle), false);
 
 		// set theta = 0.0
 		odometer.setXYT(0.0, 0.0, 0.0);
@@ -173,8 +173,8 @@ public class USLocalizer {
 		turningAngle = deltaTheta + odometer.getXYT()[2];
 
 		// rotate robot to the theta = 0.0 and we account for small error
-		leftMotor.rotate(-convertAngle(DPM_Lab4.WHEEL_RAD, DPM_Lab4.TRACK, turningAngle ), true);
-		rightMotor.rotate(convertAngle(DPM_Lab4.WHEEL_RAD, DPM_Lab4.TRACK, turningAngle ), false);
+		leftMotor.rotate(-convertAngle(project.WHEEL_RAD, project.TRACK, turningAngle ), true);
+		rightMotor.rotate(convertAngle(project.WHEEL_RAD, project.TRACK, turningAngle ), false);
 
 		// set odometer to theta = 0
 		odometer.setXYT(0.0, 0.0, 0.0);

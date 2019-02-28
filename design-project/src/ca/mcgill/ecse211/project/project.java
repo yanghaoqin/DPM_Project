@@ -14,5 +14,9 @@ public class project {
       new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
   
   public static final double TILE = 30.48;
+  
+  public static final double WHEEL_RAD = 0;//TODO: FIND VALUE
+  
+  public static final double TRACK = 0; //TODO: FIND VALUE
 
 }
