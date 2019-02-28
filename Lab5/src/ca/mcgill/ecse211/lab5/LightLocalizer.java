@@ -1,55 +1,189 @@
 package ca.mcgill.ecse211.lab5;
 
+// static imports
 import static ca.mcgill.ecse211.lab5.Lab5.LEFT_MOTOR;
+import static ca.mcgill.ecse211.lab5.Lab5.TILE;
 import static ca.mcgill.ecse211.lab5.Lab5.RIGHT_MOTOR;
 import static ca.mcgill.ecse211.lab5.Lab5.TRACK;
 import static ca.mcgill.ecse211.lab5.Lab5.WHEEL_RAD;
-import static ca.mcgill.ecse211.lab5.Search.LLx;
-import static ca.mcgill.ecse211.lab5.Search.LLy;
-import static ca.mcgill.ecse211.lab5.Search.URx;
-import static ca.mcgill.ecse211.lab5.Search.URy;
+import static ca.mcgill.ecse211.lab5.Lab5.INITIAL_ANGLE;
+import static ca.mcgill.ecse211.lab5.Lab5.HALF_CIRCLE;
+import static ca.mcgill.ecse211.lab5.Lab5.FULL_CIRCLE;
+import static ca.mcgill.ecse211.lab5.Lab5.TO_RAD;
+import static ca.mcgill.ecse211.lab5.Lab5.TO_DEG;
+// non static imports
 import ca.mcgill.ecse211.odometer.Odometer;
-import ca.mcgill.ecse211.odometer.OdometerExceptions;
 import lejos.hardware.Sound;
 import lejos.robotics.SampleProvider;
-import ca.mcgill.ecse211.lab5.Navigation;
 
+/**
+ * <p>
+ * This class implements localization with the light sensor. This class extends the Thread class to
+ * allow simultaneous execution, so that other classes can work alongside this class. Helper methods
+ * are added at the end to make conversions easier.
+ * 
+ * <p>
+ * The robot is assumed to have its heading (Theta value) localized. The X and Y will be localized
+ * using the heading. The robot is to proceed the lower-left spot of the target origin (0,0). Then
+ * the robot turns a full circle, detecting a total of four lines to compute its current X and Y
+ * with respect to the origin. Finally, the robot moves to the origin and adjusts its heading to 0
+ * degrees.
+ * 
+ * @author Raymond Yang
+ * @author Erica De Petrillo
+ */
 public class LightLocalizer {
 
-  private Odometer odometer;
-  private float[] lightData;
-  private SampleProvider lightColor;
-  private SampleProvider usDistance;
-  private float[] usData;
-  private float filterSum;
+  // -----------------------------------------------------------------------------
+  // Constants
+  // -----------------------------------------------------------------------------
 
-  private static final int SC = 0; // starting corner, modify during demo
-//  private static final int LLx = 1; // lower left x coordinate of searching area, modify during demo
-//  private static final int LLy = 1; // lower left y coordinate of searching area, modify during demo
-  private static final int SPEED = 150; // might need to change
-  private static final double THRESHOLD = 0.75; // threshold for finding gridlines
-  private static final double TURN_CIRCLE = 360.0;
+  /**
+   * The value for deciding whether a grid line is passed. This is the ratio of the measured value
+   * from the light sensor to the value of the background. If ratio is smaller than threshold, line
+   * is passed.
+   */
+  private static final double THRESHOLD = 0.75;
+
+  /**
+   * Since robot is placed on 45 degree line, this is the angle robot needs to turn right to face
+   * the origin after ultrasonic localization.
+   */
   private static final double ANGLE_TO_ORIGIN = 45.0;
-  private static final int SMOOTH_ACCELERATION = 500;
-  private static final double SENSOR_DIST = 13; // distance from sensor to center of mass of robot
-  private static final int INITIAL_ANGLE = 0;
-  private static final int HALF_CIRCLE = 180;
-  private static final int FULL_CIRCLE = 360;
-  private static final double TO_DEG = 180.0 / Math.PI;
-  private static final double TO_RAD = Math.PI / 180.0;
-  private static final int Q1Q4COR = 90;
-  private static final int Q2Q3COR = 270;
-  private static final int CENTER = 0;
-  public static final double TILE = 30.48;
-  private double std;
-  private double left_x;
-  private double right_x;
-  private double up_y;
-  private double down_y;
-  double intensity;
 
-  public LightLocalizer(SampleProvider lightColor, float[] lightData, SampleProvider usDistance,
-      float[] usData, Odometer odometer) {
+  /**
+   * This is the distance (in cm) from the center of rotation of the robot to the center of the
+   * light sensor.
+   */
+  private static final double SENSOR_DIST = 13;
+
+  /**
+   * Angle correction for Quadrant 1 and 4. Arctan returns the correct angle and the only adjustment
+   * needed is to turn it into an angle that starts from Theta = 0 and increases clockwise
+   */
+  private static final int Q1Q4COR = 90;
+
+  /**
+   * Angle correction for Quadrant 2 and 3. Arctan returns the incorrect angle and the adjustment
+   * needed is to add pi to the angle and turn it into an angle that starts from Theta = 0 and
+   * increases clockwise
+   */
+  private static final int Q2Q3COR = 270;
+
+  /**
+   * The center of the board platform that the EV3 runs on. This is used in determining which
+   * quadrant the destination coordinate is in relative to the robot's current location and whether
+   * arctan needs correction
+   */
+  private static final int CENTER = 0;
+
+  /**
+   * The angle (in degrees) corresponding to the North using our convention
+   */
+  private static final int NORTH = 0;
+
+  /**
+   * Adjustment needed to turn robot to face North. This constant exists because EV3 turns a smaller
+   * angle than expected in reality.
+   */
+  private static final int TURN_ADJUSTMENT = 6;
+
+  /**
+   * This adjustment is very similar to the TURN_ADJUSTMENT but this is specially for turning a full
+   * revolution of 360 degrees.
+   */
+  private static final int CIRCLE_ADJUSTMENT = 7;
+
+  /**
+   * Factor to amplify light sensor readings, increases sensitivity of the light sensor
+   */
+  private static final double AMP_FACTOR = 100.0;
+
+  /**
+   * Number of readings to be taken for mean filter (MF) of the light sensor.
+   */
+  private static final int MF_READINGS = 5;
+
+  /**
+   * Number of readings to be taken when computing the initial reading (IR) of the light sensor
+   */
+  private static final int IR_READINGS = 100;
+
+  /**
+   * The time for thread to sleep. To wait for turning motion to complete after detecting all 4 grid
+   * lines, when detecting grid lines.
+   */
+  private static final int IDLE_TIME = 50;
+
+  /**
+   * Starting corner of robot
+   */
+  private static final int SC = 0;
+
+  // -----------------------------------------------------------------------------
+  // Private Variables
+  // -----------------------------------------------------------------------------
+
+  /**
+   * The odometer instance
+   */
+  private Odometer odometer;
+
+  /**
+   * Buffer to store readings from the light sensor.
+   */
+  private float[] lightData;
+
+  /**
+   * An object to read sensor data in a uniform way (Meter-Kilogram-Second units)
+   */
+  private SampleProvider lightColor;
+
+  /**
+   * Stores the initial reading taken at the start of trial. The intensity for the background of the
+   * demo floor. Used to compare with readings to decide whether a grid line is passed.
+   */
+  private double std;
+
+  /**
+   * The value of Odometer's Theta when the -x axis is detected by the robot
+   */
+  private double left_x;
+
+  /**
+   * The value of Odometer's Theta when the +x axis is detected by the robot
+   */
+  private double right_x;
+
+  /**
+   * The value of Odometer's Theta when the +y axis is detected by the robot
+   */
+  private double up_y;
+
+  /**
+   * The value of Odometer's Theta when the -y axis is detected by the robot
+   */
+  private double down_y;
+
+  /**
+   * The current value returned by the light sensor
+   */
+  private double intensity;
+
+  // -----------------------------------------------------------------------------
+  // Constructor
+  // -----------------------------------------------------------------------------
+
+  /**
+   * constructor for this class, initializes variables
+   * 
+   * @param lightColor - reads light sensor data
+   * @param lightData - stores light sensor data
+   * @param usDistance - reads ultrasonic sensor data
+   * @param usData - stores light sensor data
+   * @param odometer - odometer instance
+   */
+  public LightLocalizer(SampleProvider lightColor, float[] lightData, Odometer odometer) {
     this.odometer = odometer;
     this.lightData = lightData;
     this.lightColor = lightColor;
@@ -58,78 +192,102 @@ public class LightLocalizer {
     this.right_x = 0;
     this.up_y = 0;
     this.down_y = 0;
-    this.usDistance = usDistance;
-    this.usData = usData;
-//    LEFT_MOTOR.setAcceleration(SMOOTH_ACCELERATION);
-//    RIGHT_MOTOR.setAcceleration(SMOOTH_ACCELERATION);
-
-    LEFT_MOTOR.resetTachoCount();
-    RIGHT_MOTOR.resetTachoCount();
   }
-  // assuming zero orientation is robot facing north
 
+  // -----------------------------------------------------------------------------
+  // Methods
+  // -----------------------------------------------------------------------------
+
+  /**
+   * The {@code localize()} method. In this class, a set of movements is specified to localize the
+   * robot's position. The robot determines its current position, then moves closer to the origin
+   * and turns a circle to help correct its odometer. Finally, robot travels to origin.
+   */
   public void localize() {
 
+
+    // Record reading for background color
     std = initialReading();
 
-    LEFT_MOTOR.setSpeed(SPEED);
-    RIGHT_MOTOR.setSpeed(SPEED);
+    // Record the initial tacho count
+    int startTacho = recordTachoCount();
 
-    int startTacho = (LEFT_MOTOR.getTachoCount() + RIGHT_MOTOR.getTachoCount()) / 2;
-
+    // Keep sampling until a grid line is detected
     while (true) {
+      // a mean filter is used to smooth out readings
       intensity = meanFilter();
+      // detection of grid line
       if ((intensity / std) < THRESHOLD) {
+        // Beep once for detection
         Sound.beep();
         break;
       }
-      LEFT_MOTOR.forward();
-      RIGHT_MOTOR.forward();
+      // Continue to move robot forwards if no grid line detected
+      moveForward();
     }
 
-    LEFT_MOTOR.stop(true);
-    RIGHT_MOTOR.stop(false);
+    // Stop if a grid line is detected
+    stopMotors();
 
-    int endTacho = (LEFT_MOTOR.getTachoCount() + RIGHT_MOTOR.getTachoCount()) / 2;
+    // Record the tacho count
+    int endTacho = recordTachoCount();
 
+    // Compute the distance (in degrees of wheel rotation) from the starting point to the grid line
+    // detection
     int distanceToGrid = endTacho - startTacho;
 
-    // reverse back to starting point
-    LEFT_MOTOR.rotate((int) (-distanceToGrid), true);
-    RIGHT_MOTOR.rotate((int) (-distanceToGrid), false);
+    // convert distance from degrees of wheel rotation to cm
+    distanceToGrid = (int) (deg2Distance(WHEEL_RAD, distanceToGrid));
 
-    // face origin
-    LEFT_MOTOR.rotate(convertAngle(WHEEL_RAD, TRACK, ANGLE_TO_ORIGIN), true);
-    RIGHT_MOTOR.rotate(-convertAngle(WHEEL_RAD, TRACK, ANGLE_TO_ORIGIN), false);
+    // Reverse back to starting point
+    moveBackward(distanceToGrid);
 
-    LEFT_MOTOR.rotate((int) ((distanceToGrid - SENSOR_DIST) / 3), true);
-    RIGHT_MOTOR.rotate((int) ((distanceToGrid - SENSOR_DIST) / 3), false);
+    // Face origin
+    turnRight(ANGLE_TO_ORIGIN);
 
-    // turn to face straight
-    LEFT_MOTOR.rotate(-convertAngle(WHEEL_RAD, TRACK, ANGLE_TO_ORIGIN), true);
-    RIGHT_MOTOR.rotate(convertAngle(WHEEL_RAD, TRACK, ANGLE_TO_ORIGIN), false);
+    // Move closer to origin but stop before reaching the origin
+    moveForward(distanceToGrid - SENSOR_DIST);
 
-    odometer.setTheta(0);
+    // Turn to face straight
+    turnLeft(ANGLE_TO_ORIGIN);
 
+    // Robot should be facing north. Overwrite Theta to ensure accuracy.
+    odometer.setTheta(NORTH);
+
+    // Find four angles when robot intersects four grid lines
     find4Points();
 
+    // Compute the current y position using trignometry
     double xTheta = Math.abs(left_x - right_x) / 2.0;
     double dy = Math.cos(xTheta * TO_RAD) * SENSOR_DIST;
 
+    // Update the Y value to reference the origin
     odometer.setY(-dy);
 
+    // Compute angle used to determine the x position
     double yTheta = Math.abs(down_y - up_y) / 2.0;
 
+    // Hack to ensure correct computation
+    // Needed when robot is really close to y axis
+    // Although angle is less than 180 (average less than 90) but Odometer may be inaccurate and
+    // measure angle greater than 180.
     if (yTheta > 90) {
+      // Take the complementary angle
       yTheta = 180 - yTheta;
     }
 
+    // Compute the current x position
     double dx = Math.cos(yTheta * TO_RAD) * SENSOR_DIST;
 
+    // Update the X value to reference the origin
     odometer.setX(-dx);
 
+    // Travel to the origin
     travelTo(0, 0);
-    turnTo(0);
+
+    // Turn to face north
+    // Adjustment needed since robot turns less in reality
+    turnTo(TURN_ADJUSTMENT);
 
     switch (SC) { // depending on which corner we started on
       case 0:
@@ -148,33 +306,51 @@ public class LightLocalizer {
     Sound.beep(); // beep when at lower left corners
   }
 
+  /**
+   * Turns the robot 360 degrees to find a total of 4 grid lines, recording the angle at which each
+   * grid line is detected. The angles will be used to compute the distances from the origin.
+   */
   private void find4Points() {
-    LEFT_MOTOR.rotate(convertAngle(WHEEL_RAD, TRACK, TURN_CIRCLE + 7), true);
-    RIGHT_MOTOR.rotate(-convertAngle(WHEEL_RAD, TRACK, TURN_CIRCLE + 7), true);
-    // robot does a 360
+
+    // Rotate 360 degrees clockwise, both non-blocking to allow detection of grid line while turning
+    LEFT_MOTOR.rotate(convertAngle(WHEEL_RAD, TRACK, FULL_CIRCLE + CIRCLE_ADJUSTMENT), true);
+    RIGHT_MOTOR.rotate(-convertAngle(WHEEL_RAD, TRACK, FULL_CIRCLE + CIRCLE_ADJUSTMENT), true);
+
+    // Record four grid lines in turn
     left_x = recordAngle();
     up_y = recordAngle();
     right_x = recordAngle();
     down_y = recordAngle();
 
+    // Wait for robot to complete turn before proceeding
     while (LEFT_MOTOR.isMoving() || RIGHT_MOTOR.isMoving()) {
       // wait
       try {
-        Thread.sleep(50);
+        Thread.sleep(IDLE_TIME);
       } catch (Exception e) {
         // nothing
       }
     }
   }
 
+  /**
+   * Records the current angle (in degrees) when a grid line is detected
+   * 
+   * @return The angle if detection is successful and -1 if unsuccessful
+   */
   private double recordAngle() {
     while (LEFT_MOTOR.isMoving() || RIGHT_MOTOR.isMoving()) {
+      // Take data from light sensor
       intensity = meanFilter();
-      if ((intensity / std) < THRESHOLD) { // detects another gridline
+      // Determine if grid line is passed
+      if ((intensity / std) < THRESHOLD) {
+        // Beep once to signal detection
         Sound.beep();
+        // Return the current angle
         return odometer.getXYT()[2];
       }
     }
+    // Case where robot finishes the turn but no grid line is detected
     return -1;
   }
 
@@ -185,14 +361,14 @@ public class LightLocalizer {
    * @return
    */
   private double initialReading() {
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < IR_READINGS; i++) {
       // acquires sample data
       lightColor.fetchSample(lightData, 0);
       // amplifies and sums the sample data
-      std += lightData[0] * 100.0;
+      std += lightData[0] * AMP_FACTOR;
     }
     // take average of the standard
-    return std /= 100.0;
+    return std /= IR_READINGS;
   }
 
   /**
@@ -203,36 +379,52 @@ public class LightLocalizer {
    * @return returns the average of the amplified reading
    */
   private double meanFilter() {
-    filterSum = 0;
+
+    double filterSum = 0;
     // take 5 readings
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < MF_READINGS; i++) {
 
       // acquire sample data and read into array with no offset
       lightColor.fetchSample(lightData, 0);
 
       // amplify signal for increased sensitivity
-      filterSum += lightData[0] * 100;
+      filterSum += lightData[0] * AMP_FACTOR;
 
     }
 
     // return an amplified average
-    return filterSum / 5.0;
+    return filterSum / MF_READINGS;
 
   }
 
+  /**
+   * <p>
+   * Controls the robot to travel to the coordinate (x,y) with the robot's initial starting location
+   * as the origin. This is done by retrieving current position data of the robot and calculating
+   * the new heading the robot needs to have, as well as the distance the robot needs to travel to
+   * reach its next destination. A minimum angle approach is taken, meaning that the robot will turn
+   * the smallest angle possible to adjust its heading.
+   * 
+   * <p>
+   * There is a logic implemented in this method to determine the angle the robot needs to turn,
+   * clockwise, to reach its new heading. This logic is necessary largely due to the values returned
+   * by arctan function. The arctan function only returns values ranging from -pi/2 to pi/2, and
+   * real values can be + or - pi from the returned value.
+   * 
+   * @param x - the x value of the destination with respect to the origin (in cm)
+   * @param y - the y value of the destination with respect to the origin (in cm)
+   */
   private void travelTo(double x, double y) {
 
-    double[] position = odometer.getXYT(); // get current position data from odometer
+    // get current position data from odometer
+    double[] position = odometer.getXYT();
 
-    // Fix error: no conversion from coordinate to distance in cm
-    x = x * TILE;
-    y = y * TILE;
-    
     // position[0] = x, position[1] = y, position[2] = theta
     double dx = x - position[0]; // displacement in x
     double dy = y - position[1]; // displacment in y
     double ds = Math.hypot(dx, dy);
 
+    // compute heading (theta) using arctan of y and x positions
     double dTheta = Math.atan(dy / dx) * TO_DEG;
 
     if (dTheta >= CENTER && dx >= CENTER) {
@@ -249,10 +441,11 @@ public class LightLocalizer {
       dTheta = Q2Q3COR - dTheta; // absolute angle
     }
 
-    turnTo(dTheta); // robot turns at minimum angle
+    // robot turns at minimum angle
+    turnTo(dTheta);
 
-    RIGHT_MOTOR.rotate(convertDistance(WHEEL_RAD, ds), true);
-    LEFT_MOTOR.rotate(convertDistance(WHEEL_RAD, ds), false);
+    // move robot to destination
+    moveForward(ds);
 
   }
 
@@ -269,17 +462,105 @@ public class LightLocalizer {
     double minTheta = ((Theta - odometer.getXYT()[2]) + FULL_CIRCLE) % FULL_CIRCLE;
 
     if (minTheta > INITIAL_ANGLE && minTheta <= HALF_CIRCLE) {
-      // angle is already minimum angle, robot should turn clockwise
-      RIGHT_MOTOR.rotate(-convertAngle(WHEEL_RAD, TRACK, minTheta), true);
-      LEFT_MOTOR.rotate(convertAngle(WHEEL_RAD, TRACK, minTheta), false);
+      // angle is already minimum angle, robot should turn clockwise (right)
+      turnRight(minTheta);
     } else if (minTheta > HALF_CIRCLE && minTheta < FULL_CIRCLE) {
-      // angle is not minimum angle, robot should turn counter-clockwise to the
+      // angle is not minimum angle, robot should turn counter-clockwise (left) to the
       // complementary angle of a full circle 360 degrees
       minTheta = FULL_CIRCLE - minTheta;
-      RIGHT_MOTOR.rotate(convertAngle(WHEEL_RAD, TRACK, minTheta), true);
-      LEFT_MOTOR.rotate(-convertAngle(WHEEL_RAD, TRACK, minTheta), false);
+      turnLeft(minTheta);
     }
+  }
 
+  // -----------------------------------------------------------------------------
+  // Helper Methods
+  // -----------------------------------------------------------------------------
+
+  /**
+   * Sets the speed of both the left and right EV3 large motors of the robot.
+   * 
+   * @param speed - The speed to be set
+   */
+  private void setSpeed(int speed) {
+    LEFT_MOTOR.setSpeed(speed);
+    RIGHT_MOTOR.setSpeed(speed);
+  }
+
+  /**
+   * Stops the left and right motors simultaneously. The first call to stop the left motor is
+   * non-blocking and the second call to stop the right motor is blocking. This is to ensure that
+   * both motors stop as synchronized as possible.
+   */
+  private void stopMotors() {
+    // call will return immediately
+    LEFT_MOTOR.stop(true);
+    // will only return control after stopping is completed
+    RIGHT_MOTOR.stop(false);
+  }
+
+  /**
+   * Turns the robot left for a fixed angle. Turns left EV3 large motor backwards while turning the
+   * right EV3 large motor forwards. First call to right motor is non-blocking and second call to
+   * left motor is blocking to ensure synchronized movement of the two motors.
+   * 
+   * @param angle - The angle in degrees to be turned
+   */
+  private void turnLeft(double angle) {
+    RIGHT_MOTOR.rotate(convertAngle(WHEEL_RAD, TRACK, angle), true);
+    LEFT_MOTOR.rotate(-convertAngle(WHEEL_RAD, TRACK, angle), false);
+  }
+
+  /**
+   * Turns the robot right for a fixed angle. Turns left EV3 large motor forwards while turning the
+   * right EV3 large motor backwards. First call to right motor is non-blocking and second call to
+   * left motor is blocking to ensure synchronized movement of the two motors.
+   * 
+   * @param angle - The angle in degrees to be turned
+   */
+  private void turnRight(double angle) {
+    RIGHT_MOTOR.rotate(-convertAngle(WHEEL_RAD, TRACK, angle), true);
+    LEFT_MOTOR.rotate(convertAngle(WHEEL_RAD, TRACK, angle), false);
+  }
+
+  /**
+   * Starts the robot to move forward
+   */
+  private void moveForward() {
+    LEFT_MOTOR.forward();
+    RIGHT_MOTOR.forward();
+  }
+
+  /**
+   * An overloaded method. Moves the robot forward for a specified distance (in cm). First call is
+   * non-blocking and second call is blocking to ensure synchronized motor movements.
+   * 
+   * @param distance - The distance to travel in cm
+   */
+  private void moveForward(double distance) {
+    // calls convertDistance to convert distance from cm to degrees of rotation
+    LEFT_MOTOR.rotate(convertDistance(WHEEL_RAD, distance), true);
+    RIGHT_MOTOR.rotate(convertDistance(WHEEL_RAD, distance), false);
+  }
+
+  /**
+   * Moves the robot backward for a specified distance (in cm). First call is non-blocking and
+   * second call is blocking to ensure synchronized motor movements.
+   * 
+   * @param distance - The distance to travel in cm
+   */
+  private void moveBackward(double distance) {
+    LEFT_MOTOR.rotate(convertDistance(WHEEL_RAD, -distance), true);
+    RIGHT_MOTOR.rotate(convertDistance(WHEEL_RAD, -distance), false);
+  }
+
+  /**
+   * Records the robot's current motor tacho count. Takes the average tacho count of the two motors.
+   * Tacho counts are in degrees.
+   * 
+   * @return The average tacho count of the left and right motors
+   */
+  private int recordTachoCount() {
+    return (LEFT_MOTOR.getTachoCount() + RIGHT_MOTOR.getTachoCount()) / 2;
   }
 
   /**
@@ -294,7 +575,7 @@ public class LightLocalizer {
    * @return an integer indicating the total rotation angle for wheel to cover the distance
    */
   private static int convertDistance(double radius, double distance) {
-    return (int) ((180.0 * distance) / (Math.PI * radius));
+    return (int) ((HALF_CIRCLE * distance) / (Math.PI * radius));
   }
 
   /**
@@ -309,7 +590,18 @@ public class LightLocalizer {
    * @return an int indicating the total rotation sufficient for wheel to cover turn angle
    */
   private static int convertAngle(double radius, double width, double angle) {
-    return convertDistance(radius, Math.PI * width * angle / 360.0);
+    return convertDistance(radius, Math.PI * width * angle / FULL_CIRCLE);
   }
 
+  /**
+   * Helper method. Converts degrees of wheel rotation to distance in cm travelled
+   * 
+   * @param radius - radius of robot wheel
+   * @param turncount - total number of degrees turned
+   * @return an double indicating the total distance in cm travelled equivalent to the degrees
+   *         turned
+   */
+  private static double deg2Distance(double radius, int turncount) {
+    return turncount / 360.0 * 2 * Math.PI * radius;
+  }
 }
