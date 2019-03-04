@@ -1,10 +1,11 @@
 package ca.mcgill.ecse211.project;
 
-import ca.mcgill.ecse211.project.ColourID;
 import ca.mcgill.ecse211.project.Display;
 import ca.mcgill.ecse211.project.LightLocalizer;
 import ca.mcgill.ecse211.project.Search;
 import ca.mcgill.ecse211.project.USLocalizer;
+import ca.mcgill.ecse211.project.CanCalibrator;
+import ca.mcgill.ecse211.project.ColorDetection;
 import ca.mcgill.ecse211.odometer.Odometer;
 import ca.mcgill.ecse211.odometer.OdometerExceptions;
 import lejos.hardware.Button;
@@ -139,7 +140,125 @@ public class project {
    */
   public static void main(String[] args) throws OdometerExceptions {
 
-  
+ // variable to record button clicked by user
+    int buttonChoice;
+
+    // set up odometer
+    Odometer odometer = Odometer.getOdometer(LEFT_MOTOR, RIGHT_MOTOR, TRACK, WHEEL_RAD);
+
+    // set up display
+    Display EV3Display = new Display(LCD);
+
+    // US sensor initialization
+    @SuppressWarnings("resource")
+    SensorModes usSensor = new EV3UltrasonicSensor(US_PORT);
+    SampleProvider usDistance = usSensor.getMode("Distance");
+    float[] usData = new float[usDistance.sampleSize()];
+
+    // light sensor initialization, for can classification
+    @SuppressWarnings("resource")
+    SensorModes lightSensor = new EV3ColorSensor(COLOR_PORT);
+    SampleProvider lightColor = ((EV3ColorSensor) lightSensor).getRGBMode();
+    float[] lightData = new float[3];
+
+    // color sensor for localization initialization
+    @SuppressWarnings("resource")
+    SensorModes csSensor = new EV3ColorSensor(CS_PORT);
+    SampleProvider cs = csSensor.getMode("Red");
+    float[] csData = new float[cs.sampleSize()];
+
+    // Option to choose light sensor test or start search routine
+    do {
+      LCD.clear();
+      LCD.drawString("< Left  |  Right >", 0, 0);
+      LCD.drawString("        |         ", 0, 1);
+      LCD.drawString("   LS   |  Start  ", 0, 2);
+      LCD.drawString("  TEST  |  Search ", 0, 3);
+      buttonChoice = Button.waitForAnyPress();
+    } while (buttonChoice != Button.ID_LEFT && buttonChoice != Button.ID_RIGHT
+        && buttonChoice != Button.ID_ESCAPE);
+
+    // light sensor testing
+    if (buttonChoice == Button.ID_LEFT) {
+
+      // set status
+      isColorDetection = true;
+
+      // initialize threads and instances
+      Thread odoThread = new Thread(odometer);
+      Thread displayThread = new Thread(EV3Display);
+      CanCalibrator cc = new CanCalibrator(lightColor, lightData);
+      ColorDetection cd = new ColorDetection(usDistance, usData, lightColor, lightData, LCD);
+
+      // start threads for odometer, display, and color detection
+      odoThread.start();
+      displayThread.start();
+      cd.start();
+
+      // loop to continue calibrate
+      while (buttonChoice != Button.ID_ESCAPE) {
+        cc.Calibrate();
+      }
+
+      // exit system after esc pressed
+      System.exit(0);
+
+    } else {
+
+      // in search mode
+      isColorDetection = false;
+
+      Thread odoThread = new Thread(odometer);
+      Thread displayThread = new Thread(EV3Display);
+
+      // option to choose localization mode
+      do {
+        LCD.clear();
+        LCD.drawString("< Left  |  Right >", 0, 0);
+        LCD.drawString("        |         ", 0, 1);
+        LCD.drawString("Falling |  Rising ", 0, 2);
+        LCD.drawString(" Edge   |   Edge  ", 0, 3);
+        buttonChoice = Button.waitForAnyPress();
+      } while (buttonChoice != Button.ID_LEFT && buttonChoice != Button.ID_RIGHT
+          && buttonChoice != Button.ID_ESCAPE);
+
+      // clear display
+      LCD.clear();
+
+      // start threads
+      odoThread.start();
+      displayThread.start();
+
+      // ultrasonic localization
+      USLocalizer UL = new USLocalizer(odometer, LEFT_MOTOR, RIGHT_MOTOR, buttonChoice, usDistance);
+      UL.localize();
+
+      // light sensor localization
+      LightLocalizer LL = new LightLocalizer(odometer, LEFT_MOTOR, RIGHT_MOTOR);
+      LL.localize();
+      
+      //at this point our robot will be on the closest gridline
+      
+      //TODO: MAKE IT GO THROUGH TUNNEL (NAVIGATION)
+      
+      //TODO: REACH SEARCH ZONE (NAVIGATION)
+      
+      //TODO: START SEARCH THREAD (INSIDE SEARCH, WE WILL START CAN ID AND WEIGHING AND HANDLING AND WHEN SEARCH TERMINATES WE GET BACK HERE)
+      
+      //TODO: GO BACK TO START (NAVIGATION)
+      
+      //TODO: DROP CAN (HANDLING)
+      
+      //TODO: RESTART (WHILE LOOP?)
+      
+
+     
+      // exit when esc pressed
+      while (Button.waitForAnyPress() != Button.ID_ESCAPE) {
+      }
+      System.exit(0); // exit program after esc pressed
+    }
   }
-}
+ }
+
 

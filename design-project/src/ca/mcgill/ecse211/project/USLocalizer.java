@@ -1,5 +1,6 @@
 package ca.mcgill.ecse211.project;
 
+import lejos.hardware.Button;
 import lejos.hardware.Sound;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.robotics.SampleProvider;
@@ -21,7 +22,7 @@ public class USLocalizer {
 	private Odometer odometer;
 	private float[] usData;
 	private EV3LargeRegulatedMotor leftMotor, rightMotor;
-	private boolean isRisingEdge;
+	private int buttonChoice;
 	private SampleProvider usDistance;
 
 	// Create a navigation
@@ -42,11 +43,11 @@ public class USLocalizer {
 	 * @param SampleProvider
 	 */
 	public USLocalizer(Odometer odo, EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor,
-			boolean localizationType, SampleProvider usDistance) {
+			int localizationType, SampleProvider usDistance) {
 		this.odometer = odo;
 		this.leftMotor = leftMotor;
 		this.rightMotor = rightMotor;
-		this.isRisingEdge = localizationType;
+		this.buttonChoice = localizationType;
 		this.usDistance = usDistance;
 		this.usData = new float[usDistance.sampleSize()];
 		leftMotor.setSpeed(ROTATION_SPEED);
@@ -58,9 +59,9 @@ public class USLocalizer {
 	 * 
 	 */
 	public void localize() {
-		if (isRisingEdge) {
+		if (buttonChoice == Button.ID_RIGHT) {
 			localizeRisingEdge();
-		} else {
+		} else if (buttonChoice == Button.ID_LEFT) {
 			localizeFallingEdge();
 		}
 	}
