@@ -234,7 +234,7 @@ public class project {
       UL.localize();
 
       // light sensor localization
-      LightLocalizer LL = new LightLocalizer(odometer, LEFT_MOTOR, RIGHT_MOTOR);
+      LightLocalizer LL = new LightLocalizer(odometer, LEFT_MOTOR, RIGHT_MOTOR, lightData);
       LL.localize();
       
       //at this point our robot will be on the closest gridline

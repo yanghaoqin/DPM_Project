@@ -28,21 +28,21 @@ public class LightLocalizer {
 	private EV3LargeRegulatedMotor leftMotor, rightMotor;
 	public Navigation navigation;
 	// Instantiate the EV3 Color Sensor
-	private static final EV3ColorSensor lightSensor = new EV3ColorSensor(LocalEV3.get().getPort("S3"));
+	// private static final EV3ColorSensor lightSensor = new EV3ColorSensor(LocalEV3.get().getPort("S3"));
 	private float sample;
 
 	private SensorMode idColour;
 
-	double[] lineData;
+	float[] lineData;
 
-	public LightLocalizer(Odometer odometer, EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor) {
+	public LightLocalizer(Odometer odometer, EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor, float[] sample) {
 
 		this.odometer = odometer;
 		this.leftMotor = leftMotor;
 		this.rightMotor = rightMotor;
 
-		idColour = lightSensor.getRedMode(); // set the sensor light to red
-		lineData = new double[4];
+	//	idColour = lightSensor.getRedMode(); // set the sensor light to red
+		this.lineData = sample;
 		navigation = new Navigation(odometer);
 	}
 
@@ -65,7 +65,7 @@ public class LightLocalizer {
 			rightMotor.forward();
 			sample = fetchSample();
 			if (sample < 0.38) {
-				lineData[index] = odometer.getXYT()[2];
+				lineData[index] = (float) odometer.getXYT()[2];
 				index++;
 				Sound.beep();
 			}
