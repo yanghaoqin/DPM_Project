@@ -6,6 +6,8 @@ import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.hardware.sensor.EV3ColorSensor;
 import lejos.hardware.sensor.SensorMode;
+import lejos.hardware.sensor.SensorModes;
+
 import ca.mcgill.ecse211.odometer.*;
 //import ca.mcgill.ecse211.localization.*;
 //import ca.mcgill.ecse211.navigation.*;
@@ -26,24 +28,25 @@ public class LightLocalizer {
 
 	private Odometer odometer;
 	private EV3LargeRegulatedMotor leftMotor, rightMotor;
-	public Navigation navigation;
+	//public Navigation navigation;
 	// Instantiate the EV3 Color Sensor
 	// private static final EV3ColorSensor lightSensor = new EV3ColorSensor(LocalEV3.get().getPort("S3"));
 	private float sample;
 
 	private SensorMode idColour;
+	
+	double[] lineData;
 
-	float[] lineData;
-
-	public LightLocalizer(Odometer odometer, EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor, float[] sample) {
+	public LightLocalizer(Odometer odometer, EV3LargeRegulatedMotor leftMotor, 
+			EV3LargeRegulatedMotor rightMotor, SensorModes csSensor, double[] csData) {
 
 		this.odometer = odometer;
 		this.leftMotor = leftMotor;
 		this.rightMotor = rightMotor;
 
-	//	idColour = lightSensor.getRedMode(); // set the sensor light to red
-		this.lineData = sample;
-		navigation = new Navigation(odometer);
+		idColour = ((EV3ColorSensor) csSensor).getMode("Red"); // set the sensor light to red
+		lineData = new double[4];
+	//	navigation = new Navigation(odometer);
 	}
 
 	/**
@@ -65,7 +68,7 @@ public class LightLocalizer {
 			rightMotor.forward();
 			sample = fetchSample();
 			if (sample < 0.38) {
-				lineData[index] = (float) odometer.getXYT()[2];
+				lineData[index] = odometer.getXYT()[2];
 				index++;
 				Sound.beep();
 			}
@@ -95,7 +98,7 @@ public class LightLocalizer {
 
 		// travel to origin to correct position
 		odometer.setXYT(deltax, deltay, odometer.getXYT()[2]);
-		navigation.travelTo(0.0, 0.0);
+		travelTo(0.0, 0.0);
 
 		// if we are not facing 0.0 then turn ourselves so that we are	
 		if (odometer.getXYT()[2] <= 350 && odometer.getXYT()[2] >= 10.0) {
@@ -116,7 +119,7 @@ public class LightLocalizer {
 	 */
 	public void moveToOrigin() {
 
-		navigation.turnTo(Math.PI / 4);
+		turnTo(Math.PI / 4);
 
 		leftMotor.setSpeed(ROTATION_SPEED);
 		rightMotor.setSpeed(ROTATION_SPEED);
@@ -175,5 +178,74 @@ public class LightLocalizer {
 		idColour.fetchSample(colorValue, 0);
 		return colorValue[0];
 	}
+	
+	public void turnTo(double theta) {
+
+		// ensures minimum angle for turning
+		if (theta > Math.PI) {
+			theta -= 2 * Math.PI;
+		} else if (theta < -Math.PI) {
+			theta += 2 * Math.PI;
+		}
+
+		// set Speed
+		leftMotor.setSpeed(100);
+		rightMotor.setSpeed(100);
+
+		// rotate motors at set speed
+
+		// if angle is negative, turn to the left
+		if (theta < 0) {
+			leftMotor.rotate(-convertAngle(project.WHEEL_RAD, project.TRACK, -(theta * 180) / Math.PI), true);
+			rightMotor.rotate(convertAngle(project.WHEEL_RAD, project.TRACK, -(theta * 180) / Math.PI), false);
+
+		} else {
+			// angle is positive, turn to the right
+			leftMotor.rotate(convertAngle(project.WHEEL_RAD, project.TRACK, (theta * 180) / Math.PI), true);
+			rightMotor.rotate(-convertAngle(project.WHEEL_RAD, project.TRACK, (theta * 180) / Math.PI), false);
+		}
+	}
+
+	/**
+	 * A method to drive our vehicle to a certain Cartesian coordinate
+	 * 
+	 * @param x
+	 *            X-Coordinate
+	 * @param y
+	 *            Y-Coordinate
+	 */
+	public void travelTo(double x, double y) {
+		double currx;
+		double curry;
+		double currTheta;
+		double deltax;
+		double deltay;
+		
+		currx = odometer.getXYT()[0];
+		curry = odometer.getXYT()[1];
+
+		deltax = x - currx;
+		deltay = y - curry;
+
+		// Calculate the angle to turn around
+		currTheta = (odometer.getXYT()[2]) * Math.PI / 180;
+		double mTheta = Math.atan2(deltax, deltay) - currTheta;
+
+		double hypot = Math.hypot(deltax, deltay);
+
+		// Turn to the correct angle towards the endpoint
+		turnTo(mTheta);
+
+		leftMotor.setSpeed(150);
+		rightMotor.setSpeed(150);
+
+		leftMotor.rotate(convertDistance(project.WHEEL_RAD, hypot), true);
+		rightMotor.rotate(convertDistance(project.WHEEL_RAD, hypot), false);
+
+		// stop vehicle
+		leftMotor.stop(true);
+		rightMotor.stop(true);
+	}
+	
 
 }

@@ -165,7 +165,7 @@ public class project {
     @SuppressWarnings("resource")
     SensorModes csSensor = new EV3ColorSensor(CS_PORT);
     SampleProvider cs = csSensor.getMode("Red");
-    float[] csData = new float[cs.sampleSize()];
+    double[] csData = new double[cs.sampleSize()];
 
     // Option to choose light sensor test or start search routine
     do {
@@ -234,7 +234,7 @@ public class project {
       UL.localize();
 
       // light sensor localization
-      LightLocalizer LL = new LightLocalizer(odometer, LEFT_MOTOR, RIGHT_MOTOR, lightData);
+      LightLocalizer LL = new LightLocalizer(odometer, LEFT_MOTOR, RIGHT_MOTOR, csSensor,csData);
       LL.localize();
       
       //at this point our robot will be on the closest gridline
