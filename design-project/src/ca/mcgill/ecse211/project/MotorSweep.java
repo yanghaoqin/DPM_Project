@@ -16,7 +16,8 @@ public class MotorSweep extends Thread {
     private static boolean isRotating = true;
     private static boolean upright = false;
     private static final int SWEEP_ANGLE = 35;
-    
+    public float straightTacho; //used to keep the tacho count when the sensor is straight
+   
     /**
      * Class constructor, pass the sensor motor
      * @param sensormotor2
@@ -52,12 +53,15 @@ public class MotorSweep extends Thread {
         while(true){
             while(isRotating){     // this while loop controls whether the sensor is sweeping
                 sensorMotor.rotate(SWEEP_ANGLE);        
-                sensorMotor.rotate(-2*SWEEP_ANGLE);
+                sensorMotor.rotate(-SWEEP_ANGLE);
+                straightTacho = sensorMotor.getTachoCount(); //get tacho count when sensor back straight
+                sensorMotor.rotate(-SWEEP_ANGLE);
                 sensorMotor.rotate(SWEEP_ANGLE);
             }
             while(upright){       // this while loop set the sensor to face front only once
                 
                 sensorMotor.rotateTo(0, false);
+                straightTacho = sensorMotor.getTachoCount();
                 upright = false;
                 
                 }
