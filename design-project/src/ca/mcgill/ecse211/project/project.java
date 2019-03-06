@@ -241,9 +241,11 @@ public class project {
       
       //TODO: MAKE IT GO THROUGH TUNNEL (NAVIGATION)
       
-      //TODO: REACH SEARCH ZONE (NAVIGATION)
+      //TODO: REACH SEARCH ZONE (NAVIGATION) AT LOWER LEFT CORNER
       
       //TODO: START SEARCH THREAD (INSIDE SEARCH, WE WILL START CAN ID AND WEIGHING AND HANDLING AND WHEN SEARCH TERMINATES WE GET BACK HERE)
+      Search search = new Search(odometer, usDistance, usData);
+      search.run();
       
       //TODO: GO BACK TO START (NAVIGATION)
       
