@@ -106,7 +106,7 @@ public class Search extends Thread{
            break;
          }     
        }
-       break; //break out of big while loop and so end search
+       //TODO: CALL CAN ID AND CAN WEIGHING
      }
      
      if (isRed && sCoord >= rLimit || (!isRed && sCoord <= rLimit) ) { //robot still in search zone --> we need to make it change direction
