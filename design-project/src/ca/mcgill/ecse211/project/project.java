@@ -22,7 +22,12 @@ import lejos.hardware.sensor.EV3UltrasonicSensor;
 import lejos.hardware.sensor.SensorModes;
 import lejos.robotics.SampleProvider;
 
-/* this is the main class*/
+/**
+ * this is the main class from which the whole project is run.
+ * 
+ * @author Raymond Yang
+ * @author Erica De Petrillo
+ */
 
 public class project {
   

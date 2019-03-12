@@ -10,7 +10,11 @@ import static ca.mcgill.ecse211.project.project.TILE;
 import java.util.Arrays;
 
 
-/*this class will be responsible for searching the zone for cans*/
+/**
+ * This class is responsible for the searching section of the project. It will enable the robot to search for cans in the search zone.
+ * 
+ * @author Erica De Petrillo
+ * */
 public class Search extends Thread{
 
     private static final int URx = 10; //upper right corner of search zone x coord (modify if needed)
@@ -29,15 +33,27 @@ public class Search extends Thread{
     private boolean isRed; //true if red team, false if green team
    private boolean isForward; //true if robot going towards end of search zone, false if robot going towards start of search zone
     
+   /**
+    * The constructor for the Search class.
+    * 
+    * @param odo the Odometer of the robot
+    * @param usDistance the SampleProvider for the ultrasonic sensor
+    * @param usData the array in which the samples can be stored
+    */
     public Search(Odometer odo, SampleProvider usDistance, float[] usData) {
       this.odo = odo;
       this.usDistance = usDistance;
       this.usData = usData;
     }
     
-    //the search algorithm works as follows: the robot advances in a straight line til the end of search zone
-    //while sweeping with us sensor. if can found, robot goes towards tht can, else robot turns 90 degrees right and then backtracks 
-    //to the beginning of search zone. repeat as needed.
+    
+    /**
+     * This method defines the search algorithm that the robot must follow to find cans.
+     * The robot advances in a straight line until the vertical end of the search zone while sweeping with the ultrasonic sensor.
+     * If a can is found, the robot goes toward that can to then identify, weigh, and handle it.
+     * If not, the robot reaches the end of the vertical limit of the search zone and turns towards the next search lane.
+     * The same process starts again, until a can is found, or the horizontal end of the search zone is reached.
+     */
     public void run() {
       MotorSweep motorSweep = new MotorSweep(SENSOR_MOTOR);
       motorSweep.start();

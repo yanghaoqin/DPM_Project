@@ -3,7 +3,11 @@ package ca.mcgill.ecse211.project;
 import ca.mcgill.ecse211.odometer.Odometer;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 
-/*this class will be responsible for assessing the weight of cans*/
+/**
+ * this class will be responsible for assessing the weight of cans. 
+ * 
+ * @author YunHao
+ */
 public class WeightID {
 	private Navigation nav;
 	private Odometer odo;

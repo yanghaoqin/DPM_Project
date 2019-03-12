@@ -1,14 +1,15 @@
 package ca.mcgill.ecse211.project;
 
-/* this class will control the sensor motor in a sweeping manner (for search, colorID, weightID maybe)*/
-
 import lejos.hardware.motor.EV3MediumRegulatedMotor;
 import lejos.hardware.motor.NXTRegulatedMotor;
 
 /**
- * This class controls the sweeps of the sensor and the initialization of sensor to its starting position
+ * This class controls the sweeps of the motor that is attached to the ultrasonic sensor
+ *  and the initialization of the sensor to its starting position. It is used during the searching phase of our project
+ *  
  * @author Antoine Wang
  * @author Tudor Gurau
+ * @author Erica De Petrillo
  *
  */
 public class MotorSweep extends Thread {
@@ -19,35 +20,39 @@ public class MotorSweep extends Thread {
     public float straightTacho; //used to keep the tacho count when the sensor is straight
    
     /**
-     * Class constructor, pass the sensor motor
-     * @param sensormotor2
+     * Class constructor
+     * @param sensormotor2 the Medium Motor of the robot, attached to the ultrasonic sensor
      */
     public MotorSweep(EV3MediumRegulatedMotor sensormotor2){
         this.sensorMotor = sensormotor2;
     }
     
     /**
-     * set the flag controlling the sweeping to false, so the sweeping stops
+     * This method sets the flag controlling the sweeping to false, so the sweeping stops
      */
     public void stopSensor(){
         isRotating = false; 
     }
     
     /**
-     * set the flag controlling the sweeping to true, so the sweeping starts
+     * This method sets the flag controlling the sweeping to true, so the sweeping starts
      */
     public void startSensor(){
         isRotating = true;
     }
     
     /**
-     * This method defines the whether the sensor should be reset upright
+     * This method defines whether the sensor should be reset upright
      */
     public void setPos(){
         upright = true;
     }
     
-    
+    /**
+     * This method defines the movements of the sweeping motor, and
+     * updates the tachometer count every time the sensor is straight.
+     */
+        
     public void run(){
         sensorMotor.setSpeed(50);
         while(true){

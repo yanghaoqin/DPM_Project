@@ -14,6 +14,7 @@ import ca.mcgill.ecse211.odometer.*;
 import ca.mcgill.ecse211.project.*;
 
 /**
+ * This class permits localization to the nearest grid line intersection using a light localizer pointed towards the floor.
  * 
  * @author Tudor Gurau
  * @author Antoine Wang
@@ -37,6 +38,15 @@ public class LightLocalizer {
 	
 	double[] lineData;
 
+	/**
+	 * constructor for the Light Localizer class.
+	 * 
+	 * @param odometer the Odometer of the robot
+	 * @param leftMotor the Left Motor of the robot
+	 * @param rightMotor the Right Motor of the robot
+	 * @param csSensor the Sensor Mode
+	 * @param csData the array to store the sensor samples
+	 */
 	public LightLocalizer(Odometer odometer, EV3LargeRegulatedMotor leftMotor, 
 			EV3LargeRegulatedMotor rightMotor, SensorModes csSensor, double[] csData) {
 
@@ -51,7 +61,7 @@ public class LightLocalizer {
 
 	/**
 	 * This method localizes the robot using the light sensor to precisely move to
-	 * the right location
+	 * the nearest grid line intersection
 	 */
 	public void localize() {
 
@@ -115,7 +125,7 @@ public class LightLocalizer {
 	}
 
 	/**
-	 * This method moves the robot towards the origin
+	 * This method moves the robot towards the closest grid line intersection
 	 */
 	public void moveToOrigin() {
 
@@ -157,8 +167,8 @@ public class LightLocalizer {
 	}
 
 	/**
-	 * This method allows the conversion of a angle to the total rotation of each
-	 * wheel need to cover that distance.
+	 * This method allows the conversion of an angle to the total rotation of each
+	 * wheel needed to cover that distance.
 	 * 
 	 * @param radius wheel radius
 	 * @param distance distance traveled
@@ -170,7 +180,7 @@ public class LightLocalizer {
 	}
 
 	/**
-	 * This method gets the color value of the light sensor
+	 * This method gets the color value of the light sensor.
 	 * 
 	 */
 	private float fetchSample() {

@@ -8,6 +8,7 @@ import lejos.robotics.SampleProvider;
 import ca.mcgill.ecse211.odometer.*;
 import ca.mcgill.ecse211.project.*;
 /**
+ * This class enables the robot to localize itself in a corner based on ultrasonic sensor readings.
  * 
  * @author Tudor Gurau
  * @author Antoine Wang
@@ -34,13 +35,13 @@ public class USLocalizer {
 	private static final int tolerance_rising = 2;
 
 	/**
-	 * Constructor to initialize variables
+	 * This is the constructor for the USLocalizer.
 	 * 
-	 * @param Odometer
-	 * @param EV3LargeRegulatedMotor
-	 * @param EV3LargeRegulatedMotor
-	 * @param boolean
-	 * @param SampleProvider
+	 * @param odo the Odometer of the robot
+	 * @param leftMotor the Left Motor of the robot
+	 * @param rightMotor the Right Motor of the robot
+	 * @param localizationType the Localization type (rising or falling edge)
+	 * @param usDistance the Sample Provider of the ultrasonic sensor
 	 */
 	public USLocalizer(Odometer odo, EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor,
 			int localizationType, SampleProvider usDistance) {
@@ -55,7 +56,7 @@ public class USLocalizer {
 	}
 
 	/**
-	 * A method to determine which localization method to write
+	 * This method determines which localization type is demanded
 	 * 
 	 */
 	public void localize() {
@@ -67,7 +68,7 @@ public class USLocalizer {
 	}
 
 	/**
-	 * A method to localize position using the rising edge
+	 * This method localizes the robot's position using the rising edge
 	 * 
 	 */
 	public void localizeRisingEdge() {
@@ -125,7 +126,7 @@ public class USLocalizer {
 	}
 
 	/**
-	 * A method to localize position using the falling edge
+	 * This method localizes the robot's position using the falling edge
 	 * 
 	 */
 	public void localizeFallingEdge() {
@@ -183,7 +184,7 @@ public class USLocalizer {
 	}
 
 	/**
-	 * A method to get the distance from our sensor
+	 * This method gets the distance from the ultrasonic sensor
 	 * 
 	 * @return distance detected by US sensor
 	 */
@@ -194,7 +195,7 @@ public class USLocalizer {
 
 	/**
 	 * This method allows the conversion of a distance to the total rotation of each
-	 * wheel need to cover that distance.
+	 * wheel needed to cover that distance.
 	 * 
 	 * @param radius wheel radius
 	 * @param distance distance traveled
@@ -205,8 +206,8 @@ public class USLocalizer {
 	}
 
 	/**
-	 * This method allows the conversion of a angle to the total rotation of each
-	 * wheel need to cover that distance.
+	 * This method allows the conversion of an angle to the total rotation of each
+	 * wheel needed to cover that distance.
 	 * 
 	 * @param radius wheel radius
 	 * @param distance distance traveled
