@@ -1,6 +1,7 @@
 package ca.mcgill.ecse211.project;
 
 import ca.mcgill.ecse211.project.Display;
+
 import ca.mcgill.ecse211.project.LightLocalizer;
 import ca.mcgill.ecse211.project.Search;
 import ca.mcgill.ecse211.project.USLocalizer;
@@ -9,6 +10,8 @@ import ca.mcgill.ecse211.project.ColorDetection;
 import ca.mcgill.ecse211.odometer.Odometer;
 import ca.mcgill.ecse211.odometer.OdometerExceptions;
 import lejos.hardware.Button;
+import lejos.hardware.motor.NXTRegulatedMotor;
+import lejos.remote.nxt.*;
 import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.lcd.TextLCD;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
@@ -104,8 +107,8 @@ public class project {
    * The instance of the medium motor that turns the sensor. The motor is connected to port B on the
    * EV3 brick.
    */
-  public static final EV3MediumRegulatedMotor SENSOR_MOTOR =
-      new EV3MediumRegulatedMotor(LocalEV3.get().getPort("B"));
+  public static final NXTRegulatedMotor SENSOR_MOTOR =
+      new NXTRegulatedMotor(LocalEV3.get().getPort("B"));
 
   /**
    * Port for ultrasonic sensor.
@@ -177,6 +180,7 @@ public class project {
       buttonChoice = Button.waitForAnyPress();
     } while (buttonChoice != Button.ID_LEFT && buttonChoice != Button.ID_RIGHT
         && buttonChoice != Button.ID_ESCAPE);
+    
 
     // light sensor testing
     if (buttonChoice == Button.ID_LEFT) {

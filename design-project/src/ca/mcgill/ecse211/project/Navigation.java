@@ -113,6 +113,11 @@ public class Navigation extends Thread {
    */
   private static final int INITIAL_ANGLE = 0;
 
+  /**
+   * threashold to trigger odometer correction
+   */
+  private static final int THREASHOLD = 2;
+  
   // -----------------------------------------------------------------------------
   // Class Variables
   // -----------------------------------------------------------------------------
@@ -215,6 +220,10 @@ public class Navigation extends Thread {
     RIGHT_MOTOR.setSpeed(FWDSPEED);
     LEFT_MOTOR.setSpeed(FWDSPEED);
 
+    if(Math.abs(x - odo.getXYT()[0]) <  THREASHOLD || Math.abs(y - odo.getXYT()[1]) < THREASHOLD){
+    	
+    }
+    
     // rotates both motors for a fixed number of degrees equivalent to ds, the
     // distance from the robot's current location to the next destination point,
     // equivalent as travelling straight. The boolean flag parameter indicates
@@ -223,6 +232,7 @@ public class Navigation extends Thread {
     RIGHT_MOTOR.rotate(convertDistance(WHEEL_RAD, ds), true);
     LEFT_MOTOR.rotate(convertDistance(WHEEL_RAD, ds), false);
 
+    
     isNavigating = false; // update navigation status
   }
 
