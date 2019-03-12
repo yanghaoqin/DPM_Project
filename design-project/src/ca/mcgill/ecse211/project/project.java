@@ -107,8 +107,8 @@ public class project {
    * The instance of the medium motor that turns the sensor. The motor is connected to port B on the
    * EV3 brick.
    */
-  public static final NXTRegulatedMotor SENSOR_MOTOR =
-      new NXTRegulatedMotor(LocalEV3.get().getPort("B"));
+  public static final EV3MediumRegulatedMotor SENSOR_MOTOR =
+      new EV3MediumRegulatedMotor(LocalEV3.get().getPort("B"));
 
   /**
    * Port for ultrasonic sensor.
