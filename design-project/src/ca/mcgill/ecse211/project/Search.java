@@ -70,6 +70,7 @@ public class Search extends Thread{
       RIGHT_MOTOR.setSpeed(SPEED);
       LEFT_MOTOR.forward();
       RIGHT_MOTOR.forward();
+      isForward = true;
       
       while (true) { //loop for whole search
         while ((mCoord <= uLimit) && (mCoord >= lLimit) && ((sCoord <= rLimit && !isRed) || (sCoord >= rLimit && isRed))) { //while still in search zone
@@ -122,6 +123,8 @@ public class Search extends Thread{
         
         RIGHT_MOTOR.rotate(-convertAngle(WHEEL_RAD, TRACK, 180), true); //turns 180 degrees right
         LEFT_MOTOR.rotate(convertAngle(WHEEL_RAD, TRACK, 180), false);
+        
+        isForward = false; //since we changed direction
       }
       else { //must turn left
         LEFT_MOTOR.rotate(-convertAngle(WHEEL_RAD, TRACK, 90), true); //turns 90 degrees left
@@ -132,6 +135,8 @@ public class Search extends Thread{
         
         RIGHT_MOTOR.rotate(-convertAngle(WHEEL_RAD, TRACK, 180), true); //turns 180 degrees left
         LEFT_MOTOR.rotate(convertAngle(WHEEL_RAD, TRACK, 180), false);
+        
+        isForward = true; //since we changed direction
       }     
       LEFT_MOTOR.setSpeed(SPEED);
       RIGHT_MOTOR.setSpeed(SPEED);
