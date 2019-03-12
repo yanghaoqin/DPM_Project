@@ -24,7 +24,7 @@ public class LightLocalizer {
 
 	// vehicle constants
 	public static int ROTATION_SPEED = 100;
-	private double SENSOR_LENGTH = 14.0;
+	private double SENSOR_LENGTH = 13.0;
 
 	private Odometer odometer;
 	private EV3LargeRegulatedMotor leftMotor, rightMotor;
