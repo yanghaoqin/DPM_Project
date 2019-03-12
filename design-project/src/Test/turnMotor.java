@@ -1,7 +1,11 @@
 package Test;
 
+import lejos.hardware.Button;
+import lejos.hardware.Sound;
 import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
+import lejos.hardware.motor.Motor;
+import lejos.hardware.motor.NXTRegulatedMotor;
 
 /**
  * Class for testing motor turning accuracy. Turns the motor degrees specified by user.
@@ -18,13 +22,15 @@ public class turnMotor {
   /**
    * Motor instance, specify port motor is connected to.
    */
-  private static final EV3LargeRegulatedMotor MOTOR =
+  private static final EV3LargeRegulatedMotor MOTOR2 =
       new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
+  private static final NXTRegulatedMotor MOTOR =
+	      new NXTRegulatedMotor(LocalEV3.get().getPort("A"));
 
   /**
    * The amount of turning in degrees
    */
-  private static final int DEG = 1440;
+  private static final int DEG = 440;
   
   /**
    * The acceleration of the motor
@@ -65,6 +71,19 @@ public class turnMotor {
     
     // record current tacho count
     int finalCount = MOTOR.getTachoCount();
+    
+    int buttonChoice;
+   
+    buttonChoice = Button.waitForAnyPress();
+    while (buttonChoice != Button.ID_ESCAPE){
+    	MOTOR.setSpeed(100);
+    	MOTOR.forward();
+    	if(MOTOR.isStalled()){
+    		Sound.beepSequenceUp();
+    		break;
+    	}
+    }
+      
     
     try {
 		Thread.sleep(500);
