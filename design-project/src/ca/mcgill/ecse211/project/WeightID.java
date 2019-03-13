@@ -11,52 +11,38 @@ import lejos.hardware.motor.EV3LargeRegulatedMotor;
 public class WeightID {
 	private Navigation nav;
 	private Odometer odo;
-	private long threashold = 5;
+	private long threashold = 4180;
+	
+	/**
+	 * The constructor method for WeightID class
+	 * 
+	 * @param nav  Instance of the class navigation
+	 * @param odo  Instance of the class odometer
+	 */
 	public WeightID(Navigation nav, Odometer odo){
 		this.nav = nav;
 		this.odo = odo;
 	}
+	/**
+	 * this method will travel back one tile and measure the time used.
+	 * If the time is greater than a certain threshold, it is heavy, else it is light.
+	 * @return a boolean that determine whether the can is heavy (true) or light (false) 
+	 */
 	public boolean weight(){
 		
-		project.LEFT_MOTOR.setSpeed(150);
-		project.RIGHT_MOTOR.setSpeed(150);
-		long start = System.currentTimeMillis()/1000;
-		nav.travelTo(((this.odo.getXYT()[0]) % project.TILE) - 1, (this.odo.getXYT()[0]) % project.TILE);
-		long end = System.currentTimeMillis()/1000;
+		project.LEFT_MOTOR.setSpeed(100);
+		project.RIGHT_MOTOR.setSpeed(100);
+		long start = System.currentTimeMillis();
+		nav.travelTo(((this.odo.getXYT()[0]) % project.TILE), (this.odo.getXYT()[0]) % project.TILE + 1);
+		long end = System.currentTimeMillis();
 		
 		if(end - start > threashold){
-			return true;
+			
+		  System.out.println(end - start);
+		  return true;
+			
 		}
+		System.out.println(end - start);
 		return false;
 		}
-	
-	  /**
-	   * This is a static method allows the conversion of a distance to the total rotation of each wheel
-	   * need to cover that distance.
-	   * 
-	   * (Distance / Wheel Circumference) = Number of wheel rotations. Number of rotations * 360.0
-	   * degrees = Total number of degrees needed to turn.
-	   * 
-	   * @param radius - Radius of the wheel
-	   * @param distance - Distance of path
-	   * @return an integer indicating the total rotation angle for wheel to cover the distance
-	   */
-	  private static int convertDistance(double radius, double distance) {
-	    return (int) ((180.0 * distance) / (Math.PI * radius));
-	  }
-
-	  /**
-	   * This is a static method that converts the angle needed to turn at a corner to the equivalent
-	   * total rotation. This method first converts the degrees of rotation, radius of wheels, and width
-	   * of robot to distance needed to cover by the wheel, then the method calls another static method
-	   * in process to convert distance to the number of degrees of rotation.
-	   * 
-	   * @param radius - the radius of the wheels
-	   * @param width - the track of the robot
-	   * @param angle - the angle for the turn
-	   * @return an int indicating the total rotation sufficient for wheel to cover turn angle
-	   */
-	  private static int convertAngle(double radius, double width, double angle) {
-	    return convertDistance(radius, Math.PI * width * angle / 360.0);
-	  }
 	}

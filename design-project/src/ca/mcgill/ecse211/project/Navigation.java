@@ -297,7 +297,7 @@ public class Navigation extends Thread {
    * @param distance - Distance of path
    * @return an integer indicating the total rotation angle for wheel to cover the distance
    */
-  private static int convertDistance(double radius, double distance) {
+  public static int convertDistance(double radius, double distance) {
     return (int) ((180.0 * distance) / (Math.PI * radius));
   }
 
@@ -312,7 +312,7 @@ public class Navigation extends Thread {
    * @param angle - the angle for the turn
    * @return an int indicating the total rotation sufficient for wheel to cover turn angle
    */
-  private static int convertAngle(double radius, double width, double angle) {
+  public static int convertAngle(double radius, double width, double angle) {
     return convertDistance(radius, Math.PI * width * angle / 360.0);
   }
 }

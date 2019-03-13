@@ -73,4 +73,7 @@ public class MotorSweep extends Thread {
         }
         
     }
+    public void ReinitiateMotor(EV3MediumRegulatedMotor SensorMotor, int InitialTacho) {
+      
+    }
 }

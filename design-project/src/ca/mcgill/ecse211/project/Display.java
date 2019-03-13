@@ -111,7 +111,6 @@ public class Display implements Runnable {
                     + numberFormat.format(CanCalibrator.standard_deviation[1]), 0, 4);
                 lcd.drawString("BLUE: " + numberFormat.format(CanCalibrator.mean[2]) + " +"
                     + numberFormat.format(CanCalibrator.standard_deviation[2]), 0, 5);
-
       } else {
 
         // Print x, y, theta, red, green, and blue information on display with specific format
@@ -128,12 +127,6 @@ public class Display implements Runnable {
         lcd.drawString("X: " + numberFormat.format(position[0]), 0, 0);
         lcd.drawString("Y: " + numberFormat.format(position[1]), 0, 1);
         lcd.drawString("T: " + numberFormat.format(position[2]), 0, 2);
-        lcd.drawString("RED: " + numberFormat.format(CanCalibrator.mean[0]) + " +"
-            + numberFormat.format(CanCalibrator.standard_deviation[0]), 0, 3);
-        lcd.drawString("GREEN: " + numberFormat.format(CanCalibrator.mean[1]) + " +"
-            + numberFormat.format(CanCalibrator.standard_deviation[1]), 0, 4);
-        lcd.drawString("BLUE: " + numberFormat.format(CanCalibrator.mean[2]) + " +"
-            + numberFormat.format(CanCalibrator.standard_deviation[2]), 0, 5);
       //  lcd.drawString("distance: " + numberFormat.format(Search.distDisplay), 0, 6); //TODO: FIX WHEN MAKING NEW SEARCH ALGORITHM
       }
       

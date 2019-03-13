@@ -30,6 +30,8 @@ import lejos.robotics.SampleProvider;
  */
 
 public class project {
+
+  public static long time = 0;
   
   /**
    * Size of one tile in cm
@@ -55,7 +57,7 @@ public class project {
    * The width (in cm) of the robot measured from the center of the left wheel to the center of the
    * right wheel
    */
-  public static final double TRACK = 13.3; //TODO: FIND TRACK FOR NEW ROBOT
+  public static final double TRACK = 15.4; //TODO: FIND TRACK FOR NEW ROBOT
 
   /**
    * A value for motor acceleration that prevents the wheels from slipping on the demo floor by
@@ -118,12 +120,15 @@ public class project {
   /**
    * Port for ultrasonic sensor.
    */
-  private static final Port US_PORT = LocalEV3.get().getPort("S2");
+  private static final Port US_PORT = LocalEV3.get().getPort("S4");
 
+  
+  private static final Port RIGHT_PORT = LocalEV3.get().getPort("S2");  
+  
   /**
    * Port for color sensor for localization.
    */
-  private static final Port CS_PORT = LocalEV3.get().getPort("S4");
+  private static final Port LEFT_PORT = LocalEV3.get().getPort("S1");
 
   /**
    * Port for color sensor for can classification.
@@ -171,9 +176,15 @@ public class project {
 
     // color sensor for localization initialization
     @SuppressWarnings("resource")
-    SensorModes csSensor = new EV3ColorSensor(CS_PORT);
-    SampleProvider cs = csSensor.getMode("Red");
-    double[] csData = new double[cs.sampleSize()];
+    SensorModes Left_Sensor = new EV3ColorSensor(LEFT_PORT);
+    SampleProvider left = Left_Sensor.getMode("Red");
+    float[] leftcsData = new float[left.sampleSize()];
+
+    // color sensor for localization initialization
+    @SuppressWarnings("resource")
+    SensorModes Right_Sensor = new EV3ColorSensor(RIGHT_PORT);
+    SampleProvider right = Right_Sensor.getMode("Red");
+    float[] rightcsData = new float[right.sampleSize()];
 
     // Option to choose light sensor test or start search routine
     do {
@@ -187,65 +198,12 @@ public class project {
         && buttonChoice != Button.ID_ESCAPE);
     
 
-    // light sensor testing
-    if (buttonChoice == Button.ID_LEFT) {
+    Display display = new Display(LCD);
 
-      // set status
-      isColorDetection = true;
-
-      // initialize threads and instances
-      Thread odoThread = new Thread(odometer);
-      Thread displayThread = new Thread(EV3Display);
-      CanCalibrator cc = new CanCalibrator(lightColor, lightData);
-      ColorDetection cd = new ColorDetection(usDistance, usData, lightColor, lightData, LCD);
-
-      // start threads for odometer, display, and color detection
-      odoThread.start();
-      displayThread.start();
-      cd.start();
-
-      // loop to continue calibrate
-      while (buttonChoice != Button.ID_ESCAPE) {
-        cc.Calibrate();
-      }
 
       // exit system after esc pressed
-      System.exit(0);
-
-    } else {
-
-      // in search mode
-      isColorDetection = false;
-
-      Thread odoThread = new Thread(odometer);
-      Thread displayThread = new Thread(EV3Display);
-
-      // option to choose localization mode
-      do {
-        LCD.clear();
-        LCD.drawString("< Left  |  Right >", 0, 0);
-        LCD.drawString("        |         ", 0, 1);
-        LCD.drawString("Falling |  Rising ", 0, 2);
-        LCD.drawString(" Edge   |   Edge  ", 0, 3);
-        buttonChoice = Button.waitForAnyPress();
-      } while (buttonChoice != Button.ID_LEFT && buttonChoice != Button.ID_RIGHT
-          && buttonChoice != Button.ID_ESCAPE);
-
       // clear display
-      LCD.clear();
-
-      // start threads
-      odoThread.start();
-      displayThread.start();
-
-      // ultrasonic localization
-      USLocalizer UL = new USLocalizer(odometer, LEFT_MOTOR, RIGHT_MOTOR, buttonChoice, usDistance);
-      UL.localize();
-
-      // light sensor localization
-      LightLocalizer LL = new LightLocalizer(odometer, LEFT_MOTOR, RIGHT_MOTOR, csSensor,csData);
-      LL.localize();
-      
+      LCD.clear();  
       //at this point our robot will be on the closest gridline
       
       //TODO: MAKE IT GO THROUGH TUNNEL (NAVIGATION)
@@ -253,9 +211,11 @@ public class project {
       //TODO: REACH SEARCH ZONE (NAVIGATION) AT LOWER LEFT CORNER
       
       //TODO: START SEARCH THREAD (INSIDE SEARCH, WE WILL START CAN ID AND WEIGHING AND HANDLING AND WHEN SEARCH TERMINATES WE GET BACK HERE)
-      Search search = new Search(odometer, usDistance, usData);
-      search.run();
-      
+      (new Thread(odometer)).start();
+      (new Thread(display)).start();
+      Navigation navi = new Navigation(odometer);
+      DoubleLightLocalization dll = new DoubleLightLocalization(odometer, navi, left, right, leftcsData, rightcsData);
+      dll.DoubleLocalizer();
       //TODO: GO BACK TO START (NAVIGATION)
       
       //TODO: DROP CAN (HANDLING)
@@ -270,6 +230,4 @@ public class project {
       System.exit(0); // exit program after esc pressed
     }
   }
- }
-
 

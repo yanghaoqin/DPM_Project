@@ -50,7 +50,7 @@ public class Search extends Thread{
     /**
      * This method defines the search algorithm that the robot must follow to find cans.
      * The robot advances in a straight line until the vertical end of the search zone while sweeping with the ultrasonic sensor.
-     * If a can is found, the robot goes toward that can to then identify, weigh, and handle it.
+     * If a can is found, the robot goes toward that can to then identify, weight, and handle it.
      * If not, the robot reaches the end of the vertical limit of the search zone and turns towards the next search lane.
      * The same process starts again, until a can is found, or the horizontal end of the search zone is reached.
      */
