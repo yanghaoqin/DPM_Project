@@ -14,9 +14,10 @@ import lejos.robotics.SampleProvider;
  * information.
  * 
  * @author Raymond H. Yang
- * @version 1.1
+ * @version 1.0
+ * @date 2019/03/12
  */
-public class sshDR {
+public class NormTestSSH {
 
   /**
    * Number of sets of data to read
@@ -26,7 +27,7 @@ public class sshDR {
   /**
    * Number of readings to read for each set
    */
-  private static final int READINGS = 10;
+  private static final int READINGS = 30;
 
   /**
    * main method
@@ -39,7 +40,7 @@ public class sshDR {
     // sensor initialization
     EV3ColorSensor sensor = new EV3ColorSensor(LocalEV3.get().getPort("S1"));
     SampleProvider lightColor = (sensor).getRGBMode();
-    float[][] csData = new float[100][3];
+    float[][] csData = new float[30][3];
 
     // number of sets of readings
     for (int i = 1; i <= SETS; i++) {
