@@ -25,7 +25,7 @@ public class turnMotor {
   private static final EV3LargeRegulatedMotor MOTOR2 =
       new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
   private static final NXTRegulatedMotor MOTOR =
-	      new NXTRegulatedMotor(LocalEV3.get().getPort("A"));
+	      new NXTRegulatedMotor(LocalEV3.get().getPort("B"));
 
   /**
    * The amount of turning in degrees
@@ -76,9 +76,9 @@ public class turnMotor {
    
     buttonChoice = Button.waitForAnyPress();
     while (buttonChoice != Button.ID_ESCAPE){
-    	MOTOR.setSpeed(100);
+    	MOTOR.setSpeed(200);
     	MOTOR.forward();
-    	if(MOTOR.isStalled()){
+    	if(!MOTOR.isMoving()){
     		Sound.beepSequenceUp();
     		break;
     	}
