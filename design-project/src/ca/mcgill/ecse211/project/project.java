@@ -114,8 +114,8 @@ public class project {
    * The instance of the medium motor that turns the sensor. The motor is connected to port B on the
    * EV3 brick.
    */
-  public static final EV3MediumRegulatedMotor SENSOR_MOTOR =
-      new EV3MediumRegulatedMotor(LocalEV3.get().getPort("B"));
+  public static final NXTRegulatedMotor SENSOR_MOTOR =
+      new NXTRegulatedMotor(LocalEV3.get().getPort("B"));
 
   /**
    * Port for ultrasonic sensor.
@@ -206,16 +206,22 @@ public class project {
       LCD.clear();  
       //at this point our robot will be on the closest gridline
       
-      //TODO: MAKE IT GO THROUGH TUNNEL (NAVIGATION)
-      
-      //TODO: REACH SEARCH ZONE (NAVIGATION) AT LOWER LEFT CORNER
-      
-      //TODO: START SEARCH THREAD (INSIDE SEARCH, WE WILL START CAN ID AND WEIGHING AND HANDLING AND WHEN SEARCH TERMINATES WE GET BACK HERE)
+      //TODO: LOCALIZATION
       (new Thread(odometer)).start();
       (new Thread(display)).start();
       Navigation navi = new Navigation(odometer);
       DoubleLightLocalization dll = new DoubleLightLocalization(odometer, navi, left, right, leftcsData, rightcsData);
       dll.DoubleLocalizer();
+      
+      //TODO: MAKE IT GO THROUGH TUNNEL (NAVIGATION)
+      
+      //TODO: REACH SEARCH ZONE (NAVIGATION) AT LOWER LEFT CORNER
+      Search search = new Search(odometer, usDistance, usData);
+      search.run();
+      
+      
+      //TODO: START SEARCH THREAD (INSIDE SEARCH, WE WILL START CAN ID AND WEIGHING AND HANDLING AND WHEN SEARCH TERMINATES WE GET BACK HERE)
+      
       //TODO: GO BACK TO START (NAVIGATION)
       
       //TODO: DROP CAN (HANDLING)

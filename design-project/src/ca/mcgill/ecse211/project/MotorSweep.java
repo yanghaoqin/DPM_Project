@@ -1,6 +1,6 @@
 package ca.mcgill.ecse211.project;
 
-import lejos.hardware.motor.EV3MediumRegulatedMotor;
+//import lejos.hardware.motor.EV3MediumRegulatedMotor;
 import lejos.hardware.motor.NXTRegulatedMotor;
 
 /**
@@ -13,17 +13,17 @@ import lejos.hardware.motor.NXTRegulatedMotor;
  *
  */
 public class MotorSweep extends Thread {
-    private EV3MediumRegulatedMotor sensorMotor;
+    private NXTRegulatedMotor sensorMotor;
     private static boolean isRotating = true;
     private static boolean upright = false;
-    private static final int SWEEP_ANGLE = 35;
+    private static final int SWEEP_ANGLE = 70;
     public float straightTacho; //used to keep the tacho count when the sensor is straight
    
     /**
      * Class constructor
      * @param sensormotor2 the Medium Motor of the robot, attached to the ultrasonic sensor
      */
-    public MotorSweep(EV3MediumRegulatedMotor sensormotor2){
+    public MotorSweep(NXTRegulatedMotor sensormotor2){
         this.sensorMotor = sensormotor2;
     }
     
@@ -54,7 +54,7 @@ public class MotorSweep extends Thread {
      */
         
     public void run(){
-        sensorMotor.setSpeed(50);
+        sensorMotor.setSpeed(100);
         while(true){
             while(isRotating){     // this while loop controls whether the sensor is sweeping
                 sensorMotor.rotate(SWEEP_ANGLE);        
@@ -73,7 +73,7 @@ public class MotorSweep extends Thread {
         }
         
     }
-    public void ReinitiateMotor(EV3MediumRegulatedMotor SensorMotor, int InitialTacho) {
+    public void ReinitiateMotor(NXTRegulatedMotor SensorMotor, int InitialTacho) {
       
     }
 }
