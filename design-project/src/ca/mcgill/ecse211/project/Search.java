@@ -30,7 +30,7 @@ public class Search extends Thread{
     private static final double TRACK = 0; //TODO: TWEAK
     private static final double CAN_CLOSE = 0; //closer distance at which there must be a can. robot must stop as to not hit can. TODO: TWEAK
     private float angleTacho; //tacho count for angle at which can detected
-    private boolean isRed; //true if red team, false if green team
+    private boolean isRed = false; //TODO: CHANGE WHEN NEEDED true if red team, false if green team
    private boolean isForward; //true if robot going towards end of search zone, false if robot going towards start of search zone
     
    /**
@@ -55,8 +55,9 @@ public class Search extends Thread{
      * The same process starts again, until a can is found, or the horizontal end of the search zone is reached.
      */
     public void run() {
+      Thread motorThread = new Thread(odo);
       MotorSweep motorSweep = new MotorSweep(SENSOR_MOTOR);
-      motorSweep.start();
+      motorThread.start();
       motorSweep.startSensor(); //NOT SURE THIS IS HOW TO START A THREAD
       
       double mCoord; //main coord
