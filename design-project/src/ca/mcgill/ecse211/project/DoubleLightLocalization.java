@@ -12,14 +12,12 @@ import ca.mcgill.ecse211.odometer.*;
 public class DoubleLightLocalization {
 
   private Odometer odometer;
-  private Navigation navigator;
   private SampleProvider LeftidColour;
   private SampleProvider RightidColour;
   private float[] LeftcolorValue;
   private float[] RightcolorValue;
   
-  double[] lineData;
-
+  private static final double SENSOR_TOWHEEL = 12.6; 
   /**
    * 
    * @param odometer Instance of the Odometer class 
@@ -27,44 +25,52 @@ public class DoubleLightLocalization {
    * @param LeftcsSensor Left side color sensor
    * @param RightcsSensor Right side color sensor
    */
-  public DoubleLightLocalization(Odometer odometer, Navigation navigator, SampleProvider LeftcsSensor,
+  public DoubleLightLocalization(Odometer odometer, SampleProvider LeftcsSensor,
       SampleProvider RightcsSensor, float[] LeftcolorValue, float[] RightcolorValue) {
 
     this.odometer = odometer;
-    this.navigator = navigator;
     this.LeftidColour = LeftcsSensor;
     this.RightidColour = RightcsSensor;
     this.LeftcolorValue = LeftcolorValue;
     this.RightcolorValue = RightcolorValue;
     
     // set the sensor light to red
-    lineData = new double[4];
-    // navigation = new Navigation(odometer);
+  
   }
 
   /**
-   * Localize the machine using 2 light sensors: travel to the black line for x,
-   * turn 90, travel to a black line for y, turn -90 fall back for 20 cm, advance until we
-   * see lines, back up by 12.6 cm (length between sensor and wheel).
-   * reset odometer
+   * Localize the machine using 2 light sensors:
+   * 1. With the robot heading roughly in positive y direction, drive forward until both sensor detected x axis
+   * 2. Reset odometer value (Y coord) and the heading according to X axis
+   * 3. Drive back 20cm to ensure the machine is in the 3rd quadrant relative to the origin
+   * 4. turn 90 degree to the right. With the robot heading roughly in positive x direction, drive forward until both sensor detected y axis
+   * 5. Reset odometer value (X coord) and the heading according to Y axis
+   * 6. Drive back 20cm to ensure the machine is in the 3rd quadrant relative to the origin, then navigate to the original point.
+   * 7. At the end of the method, the vehicle should be located at (0,0) with a heading of 0 degree
    */
 
   public void DoubleLocalizer() {
 
+	// Drive to X axis and initialize Y
     travelToLine();
-    odometer.setY(12.6);
+    odometer.setY(SENSOR_TOWHEEL);
     odometer.setTheta(0);
+    
+    //Drive back 20cm and turn 90 degree facing Y axis
     RIGHT_MOTOR.rotate(-Navigation.convertDistance(project.WHEEL_RAD, 20), true);
     LEFT_MOTOR.rotate(-Navigation.convertDistance(project.WHEEL_RAD, 20), false);
-    turnTo(Math.PI/2);
+    reorientRobot(Math.PI/2);
+    
+    // Drive to y axis and initialize x
     travelToLine();
-    odometer.setX(12.6);
+    odometer.setX(SENSOR_TOWHEEL);
     odometer.setTheta(90);
+    
+    // Drive back for 20cm and then localize at the origin
     RIGHT_MOTOR.rotate(-Navigation.convertDistance(project.WHEEL_RAD, 20), true);
     LEFT_MOTOR.rotate(-Navigation.convertDistance(project.WHEEL_RAD, 20), false);
-    travelTo(0,0);
-    LEFT_MOTOR.rotate(-convertAngle(project.WHEEL_RAD, project.TRACK, odometer.getXYT()[2]), true);
-    RIGHT_MOTOR.rotate(convertAngle(project.WHEEL_RAD, project.TRACK, odometer.getXYT()[2]), false);
+    travelToOrigin();
+   
   }
 
   /**
@@ -163,9 +169,14 @@ public class DoubleLightLocalization {
     return filterSum / 10;
   }
   
-  
-  
-  public void turnTo(double theta) {
+  /**
+   * This method turns the robot by the magnitude indicated by the input parameter
+   * The input angle will always be brought down to the minimum angle needed to turn and
+   * it can adjust itself in both cw and ccw directions. 
+   * @param theta RADIAN value of the angle that the robot will adjust its orientation
+   * 		For adjusting clockwise the parameter should be positive, for ccw adjustment please input a negative radian
+   */
+  public void reorientRobot(double theta) {
 
     // ensures minimum angle for turning
     if (theta > Math.PI) {
@@ -182,67 +193,59 @@ public class DoubleLightLocalization {
 
     // if angle is negative, turn to the left
     if (theta < 0) {
-      project.LEFT_MOTOR.rotate(-convertAngle(project.WHEEL_RAD, project.TRACK, -(theta * 180) / Math.PI), true);
-      project.RIGHT_MOTOR.rotate(convertAngle(project.WHEEL_RAD, project.TRACK, -(theta * 180) / Math.PI), false);
+      project.LEFT_MOTOR.rotate(-Navigation.convertAngle(project.WHEEL_RAD, project.TRACK, -(theta * 180) / Math.PI), true);
+      project.RIGHT_MOTOR.rotate(Navigation.convertAngle(project.WHEEL_RAD, project.TRACK, -(theta * 180) / Math.PI), false);
 
     } else {
         // angle is positive, turn to the right
-      project.LEFT_MOTOR.rotate(convertAngle(project.WHEEL_RAD, project.TRACK, (theta * 180) / Math.PI), true);
-      project.RIGHT_MOTOR.rotate(-convertAngle(project.WHEEL_RAD, project.TRACK, (theta * 180) / Math.PI), false);
+      project.LEFT_MOTOR.rotate(Navigation.convertAngle(project.WHEEL_RAD, project.TRACK, (theta * 180) / Math.PI), true);
+      project.RIGHT_MOTOR.rotate(-Navigation.convertAngle(project.WHEEL_RAD, project.TRACK, (theta * 180) / Math.PI), false);
     }
 }
   
-  
-  public void travelTo(double x, double y) {
+  /**
+   * This method takes in the robot's current location and navigate the robot to the (0,0) point
+   * Then it adjust the robot's orientation into zero degree (facing positive Y axis)
+   */
+  public void travelToOrigin() {
     double currx;
     double curry;
     double currTheta;
     double deltax;
     double deltay;
     
+    //Get current location from odometer
     currx = odometer.getXYT()[0];
     curry = odometer.getXYT()[1];
 
-    deltax = x - currx;
-    deltay = y - curry;
+    deltax = 0 - currx;
+    deltay = 0 - curry;
 
     // Calculate the angle to turn around
     currTheta = (odometer.getXYT()[2]) * Math.PI / 180;
     double mTheta = Math.atan2(deltax, deltay) - currTheta;
 
+    //Calculate the distance from original point
     double hypot = Math.hypot(deltax, deltay);
 
     // Turn to the correct angle towards the endpoint
-    turnTo(mTheta);
+    reorientRobot(mTheta);
 
+    //Setting the speed and proceed to the origin point
     project.LEFT_MOTOR.setSpeed(150);
     project.RIGHT_MOTOR.setSpeed(150);
-
-    project.LEFT_MOTOR.rotate(convertDistance(project.WHEEL_RAD, hypot), true);
-    project.RIGHT_MOTOR.rotate(convertDistance(project.WHEEL_RAD, hypot), false);
+    project.LEFT_MOTOR.rotate(Navigation.convertDistance(project.WHEEL_RAD, hypot), true);
+    project.RIGHT_MOTOR.rotate(Navigation.convertDistance(project.WHEEL_RAD, hypot), false);
+    
+    //Adjusting itself at 0 degree heading by turning in the opposite direction to offset the current odometer reading
+    LEFT_MOTOR.rotate(-Navigation.convertAngle(project.WHEEL_RAD, project.TRACK, odometer.getXYT()[2]), true);
+    RIGHT_MOTOR.rotate(Navigation.convertAngle(project.WHEEL_RAD, project.TRACK, odometer.getXYT()[2]), false);
 
     // stop vehicle
     project.LEFT_MOTOR.stop(true);
-    project.RIGHT_MOTOR.stop(true);
+    project.RIGHT_MOTOR.stop(false);
   
   }
   
-  public static int convertDistance(double radius, double distance) {
-    return (int) ((180.0 * distance) / (Math.PI * radius));
-  }
-
-  /**
-   * This is a static method that converts the angle needed to turn at a corner to the equivalent
-   * total rotation. This method first converts the degrees of rotation, radius of wheels, and width
-   * of robot to distance needed to cover by the wheel, then the method calls another static method
-   * in process to convert distance to the number of degrees of rotation.
-   * 
-   * @param radius - the radius of the wheels
-   * @param width - the track of the robot
-   * @param angle - the angle for the turn
-   * @return an int indicating the total rotation sufficient for wheel to cover turn angle
-   */
-  public static int convertAngle(double radius, double width, double angle) {
-    return convertDistance(radius, Math.PI * width * angle / 360.0);
-  }
+ 
 }

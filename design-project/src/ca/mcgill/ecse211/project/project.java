@@ -214,7 +214,7 @@ public class project {
       (new Thread(odometer)).start();
       (new Thread(display)).start();
       Navigation navi = new Navigation(odometer);
-      DoubleLightLocalization dll = new DoubleLightLocalization(odometer, navi, left, right, leftcsData, rightcsData);
+      DoubleLightLocalization dll = new DoubleLightLocalization(odometer,left, right, leftcsData, rightcsData);
       dll.DoubleLocalizer();
       //TODO: GO BACK TO START (NAVIGATION)
       
