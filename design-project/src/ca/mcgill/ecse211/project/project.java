@@ -209,16 +209,15 @@ public class project {
       //TODO: LOCALIZATION
       (new Thread(odometer)).start();
       (new Thread(display)).start();
-      Navigation navi = new Navigation(odometer);
-      DoubleLightLocalization dll = new DoubleLightLocalization(odometer,left, right, leftcsData, rightcsData);
-      dll.DoubleLocalizer();
       
+      WeightID weight = new WeightID(left, leftcsData);
+      weight.weight();
       //TODO: MAKE IT GO THROUGH TUNNEL (NAVIGATION)
       
       //TODO: REACH SEARCH ZONE (NAVIGATION) AT LOWER LEFT CORNER
-      Search search = new Search(odometer, usDistance, usData);
+      /*Search search = new Search(odometer, usDistance, usData);
       search.run();
-      
+      */
       
       //TODO: START SEARCH THREAD (INSIDE SEARCH, WE WILL START CAN ID AND WEIGHING AND HANDLING AND WHEN SEARCH TERMINATES WE GET BACK HERE)
       
