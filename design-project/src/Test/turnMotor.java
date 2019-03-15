@@ -66,23 +66,30 @@ public class turnMotor {
     System.out.println("Standby...");
 
     // rotate the motor
-    MOTOR.rotate(DEG, false);
-    MOTOR.stop();
-    
+    int i = 0;
+    while(i<5){
+    	MOTOR.rotate(90);        
+    	MOTOR.rotate(-150);
+        
+    	MOTOR.rotate(60);
+    	i++;
+    }
+    MOTOR.rotateTo(0);
+    System.exit(0);
     // record current tacho count
     int finalCount = MOTOR.getTachoCount();
     
     int buttonChoice;
    
     buttonChoice = Button.waitForAnyPress();
-    while (buttonChoice != Button.ID_ESCAPE){
-    	MOTOR.setSpeed(200);
-    	MOTOR.forward();
-    	if(!MOTOR.isMoving()){
-    		Sound.beepSequenceUp();
-    		break;
-    	}
-    }
+//    while (buttonChoice != Button.ID_ESCAPE){
+//    	MOTOR.setSpeed(200);
+//    	MOTOR.forward();
+//    	if(!MOTOR.isStalled()){
+//    		Sound.beepSequenceUp();
+//    		break;
+//    	}
+//    }
       
     
     try {
