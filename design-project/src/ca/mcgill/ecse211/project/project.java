@@ -7,9 +7,12 @@ import ca.mcgill.ecse211.project.Search;
 import ca.mcgill.ecse211.project.USLocalizer;
 import ca.mcgill.ecse211.project.CanCalibrator;
 import ca.mcgill.ecse211.project.ColorDetection;
+import static ca.mcgill.ecse211.project.project.LEFT_MOTOR;
+import static ca.mcgill.ecse211.project.project.RIGHT_MOTOR;
 import ca.mcgill.ecse211.odometer.Odometer;
 import ca.mcgill.ecse211.odometer.OdometerExceptions;
 import lejos.hardware.Button;
+import lejos.hardware.Sound;
 import lejos.hardware.motor.NXTRegulatedMotor;
 import lejos.remote.nxt.*;
 import lejos.hardware.ev3.LocalEV3;
@@ -262,17 +265,77 @@ public class project {
       DoubleLightLocalization dll = new DoubleLightLocalization(odometer,left, right, leftcsData, rightcsData);
       dll.DoubleLocalizer();
       
+      Sound.beep(); //to signal robot in place (beta demo requirement)
+      
+      //now that the robot is at the gridline, update odometer based on corner number
+      switch (corner) {
+        case 0: 
+          odometer.setXYT(1 * TILE, 1 * TILE, 0);        
+          break;
+        case 1:
+          odometer.setXYT(14 * TILE, 1 * TILE, 270);
+          break;
+        case 2:
+          odometer.setXYT(14 * TILE, 8 * TILE, 180);
+          break;
+        case 3:
+          odometer.setXYT(1 * TILE, 8 * TILE, 90);        
+      } //theta might have to be changed if not the same reference system as in lab 5
+      
+      Navigation nav = new Navigation(odometer);
+      
       //TODO: READCH LOWER LEFT OF TUNNEL (NAVIGATION)
+      int tunnelLength;
+      if ((tunnel_LL_x < tunnel_UR_x) && (tunnel_LL_y < tunnel_UR_y)) {
+        nav.travelTo(tunnel_LL_x + TILE/2, tunnel_LL_y - TILE/2);
+        nav.turnTo(0); //TODO: MIGHT NEED TO FIX TURNTO
+        tunnelLength = tunnel_UR_y - tunnel_LL_y + 1; //+1 to account for half tile before and after
+      } //turn at 0 based on orientation of tunnel
+      else if ((tunnel_LL_x > tunnel_UR_x) && (tunnel_LL_y < tunnel_UR_y)) {
+        nav.travelTo(tunnel_LL_x + TILE/2, tunnel_LL_y + TILE/2);
+        nav.turnTo(270);
+        tunnelLength = tunnel_LL_x - tunnel_UR_x + 1;
+      }
+      else if ((tunnel_LL_x > tunnel_UR_x) && (tunnel_LL_y > tunnel_UR_y)) {
+        nav.travelTo(tunnel_LL_x - TILE/2, tunnel_LL_y + TILE/2);
+        nav.turnTo(180);
+        tunnelLength = tunnel_LL_y - tunnel_UR_y + 1;
+      }
+      else {
+        nav.travelTo(tunnel_LL_x - TILE/2, tunnel_LL_y - TILE/2);
+        nav.turnTo(90);
+        tunnelLength = tunnel_UR_x - tunnel_LL_x + 1;
+      }
    
       //TODO: MAKE IT GO THROUGH TUNNEL (NAVIGATION)
+      RIGHT_MOTOR.rotate(Navigation.convertDistance(WHEEL_RAD, tunnelLength), true);
+      LEFT_MOTOR.rotate(Navigation.convertDistance(WHEEL_RAD, tunnelLength), false);
       
       //TODO: REACH SEARCH ZONE (NAVIGATION) AT LOWER LEFT CORNER
+      nav.travelTo(zone_LL_x, zone_LL_y);
+      Sound.beep();
+      Sound.beep();
+      Sound.beep();
+      Sound.beep();
+      Sound.beep(); //beeps 5 times (beta demo requirement)
       
       //TODO: START SEARCH THREAD (INSIDE SEARCH, WE WILL START CAN ID AND WEIGHING AND HANDLING AND WHEN SEARCH TERMINATES WE GET BACK HERE)
       Search search = new Search(odometer, usDistance, usData);
       search.run();
+      ColorDetection colDet = new ColorDetection(usDistance, usData, lightColor, lightData, LCD);
+      int colorIndex = colDet.rotateSensorDetect();
+      if (colorIndex == 0) {
+        LCD.drawString("Red Can", 0, 1);
+      } else if (colorIndex == 1) {
+        LCD.drawString("Green Can", 0, 1);
+      } else if (colorIndex == 2) {
+        LCD.drawString("Blue Can", 0, 1);
+      } else if (colorIndex == 3) {
+        LCD.drawString("Yellow Can", 0, 1);
+      }
+      
     
-      WeightID weight = new WeightID(left, leftcsData); //TODO: THIS WILL BE PLACED IN SEARCH ALGORITHM AFTERWARDS
+      WeightID weight = new WeightID(left, leftcsData); //TODO: THIS WILL BE PLACED IN SEARCH ALGORITHM AFTERWARDS maybe?
       weight.weight();
       //TODO: GO BACK TO START (NAVIGATION)
       

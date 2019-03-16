@@ -105,7 +105,6 @@ public class Search extends Thread{
           }*/
           double distance = medianFilter();
           if (distance < CAN) { //can is detected
-            Sound.buzz();
             motorSweep.stopSensor(); //motor stops sweeping
             angleTacho = SENSOR_MOTOR.getTachoCount();
             float angle = angleTacho - motorSweep.straightTacho; //find angle at which robot must rotate to keep going straight to find can
@@ -123,7 +122,6 @@ public class Search extends Thread{
          }
           
         }
-        Sound.beep();
       
        if (canFound) { //if we exited the previous while loop because a can was detected by US
        LEFT_MOTOR.setSpeed(SPEED);
@@ -139,12 +137,9 @@ public class Search extends Thread{
            break;
          }     
        }
-       //TODO: CALL CAN ID AND CAN WEIGHING
      }
-     Sound.buzz();
     // if (isRed && sCoord >= rLimit || (!isRed && sCoord <= rLimit) ) { //robot still in search zone --> we need to make it change direction
       if (odo.getXYT()[0] <= project.zone_UR_x) {
-        Sound.beep();
        LEFT_MOTOR.stop();
        RIGHT_MOTOR.stop(); 
        
@@ -178,7 +173,7 @@ public class Search extends Thread{
       RIGHT_MOTOR.forward();
      }
      
-     else { //robot reached rLimit. technically should not happen since the robot should not have to go through whole search zone without finding a can
+     else if (odo.getXYT()[0] <= project.zone_UR_x) { //robot reached rLimit. technically should not happen since the robot should not have to go through whole search zone without finding a can
        LEFT_MOTOR.stop();
        RIGHT_MOTOR.stop(); 
        motorSweep.stopSensor(); //motor stops sweeping

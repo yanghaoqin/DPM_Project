@@ -100,7 +100,7 @@ public class ColorDetection extends Thread {
    * 
    * @return int index of the classified
    */
-  private int rotateSensorDetect() {
+  public int rotateSensorDetect() {
     // Create a array of length 7
     int[] colorResult = new int[7];
 
