@@ -91,6 +91,21 @@ public class project {
   public static final double[] YELLOW_COLOR = {0.85, 0.52, 0.09}; // value of yellow colour
   public static final double[] RED_COLOR = {0.98, 0.24, 0.07}; // value of red colour
 
+  //params
+  public static int corner;
+  public static int team_LL_x;
+  public static int team_LL_y;
+  public static int team_UR_x;
+  public static int team_UR_y;
+  //island is the same fr both teams so no need for new var
+  public static int tunnel_LL_x;
+  public static int tunnel_LL_y;
+  public static int tunnel_UR_x;
+  public static int tunnel_UR_y;
+  public static int zone_LL_x;
+  public static int zone_LL_y;
+  public static int zone_UR_x;
+  public static int zone_UR_y;
   /**
    * The instance of the left wheel large EV3 motor. The left motor is connected to port A on the
    * EV3 brick.
@@ -206,34 +221,65 @@ public class project {
       LCD.clear();  
       //at this point our robot will be on the closest gridline
 
+       //TODO: WIFI ACQUISITION OF DATA
+      Wifi.main(args);
+      
+      if (Wifi.RedTeam == 23) {
+        corner = Wifi.RedCorner;
+        team_LL_x = Wifi.Red_LL_x;
+        team_LL_y = Wifi.Red_LL_y;
+        team_UR_x = Wifi.Red_UR_x;
+        team_UR_y = Wifi.Red_UR_y;
+        tunnel_LL_x = Wifi.TNR_LL_x;
+        tunnel_LL_y = Wifi.TNR_LL_y;
+        tunnel_UR_x = Wifi.TNR_UR_x;
+        tunnel_UR_y = Wifi.TNR_UR_y;
+        zone_LL_x = Wifi.SZR_LL_x;
+        zone_LL_y = Wifi.SZR_LL_y;
+        zone_UR_x = Wifi.SZR_UR_x;
+        zone_UR_x = Wifi.SZR_UR_y;
+      }
+      else if (Wifi.GreenTeam == 23) {
+        corner = Wifi.GreenCorner;
+        team_LL_x = Wifi.Green_LL_x;
+        team_LL_y = Wifi.Green_LL_y;
+        team_UR_x = Wifi.Green_UR_x;
+        team_UR_y = Wifi.Green_UR_y;
+        tunnel_LL_x = Wifi.TNG_LL_x;
+        tunnel_LL_y = Wifi.TNG_LL_y;
+        tunnel_UR_x = Wifi.TNG_UR_x;
+        tunnel_UR_y = Wifi.TNG_UR_y;
+        zone_LL_x = Wifi.SZG_LL_x;
+        zone_LL_y = Wifi.SZG_LL_y;
+        zone_UR_x = Wifi.SZG_UR_x;
+        zone_UR_x = Wifi.SZG_UR_y;
+      }
+    
       //TODO: LOCALIZATION
-      (new Thread(odometer)).start();
-      (new Thread(display)).start();
-      
-      WeightID weight = new WeightID(left, leftcsData);
-      weight.weight();
-      //TODO: MAKE IT GO THROUGH TUNNEL (NAVIGATION)
-      
-      //TODO: REACH SEARCH ZONE (NAVIGATION) AT LOWER LEFT CORNER
-      Search search = new Search(odometer, usDistance, usData);
-      search.run();
-      
-      //TODO: MAKE IT GO THROUGH TUNNEL (NAVIGATION)
-      
-      //TODO: REACH SEARCH ZONE (NAVIGATION) AT LOWER LEFT CORNER
-      
-      //TODO: START SEARCH THREAD (INSIDE SEARCH, WE WILL START CAN ID AND WEIGHING AND HANDLING AND WHEN SEARCH TERMINATES WE GET BACK HERE)
       (new Thread(odometer)).start();
       (new Thread(display)).start();
       Navigation navi = new Navigation(odometer);
       DoubleLightLocalization dll = new DoubleLightLocalization(odometer,left, right, leftcsData, rightcsData);
       dll.DoubleLocalizer();
+      
+      //TODO: READCH LOWER LEFT OF TUNNEL (NAVIGATION)
+   
+      //TODO: MAKE IT GO THROUGH TUNNEL (NAVIGATION)
+      
+      //TODO: REACH SEARCH ZONE (NAVIGATION) AT LOWER LEFT CORNER
+      
+      //TODO: START SEARCH THREAD (INSIDE SEARCH, WE WILL START CAN ID AND WEIGHING AND HANDLING AND WHEN SEARCH TERMINATES WE GET BACK HERE)
+      Search search = new Search(odometer, usDistance, usData);
+      search.run();
+    
+      WeightID weight = new WeightID(left, leftcsData); //TODO: THIS WILL BE PLACED IN SEARCH ALGORITHM AFTERWARDS
+      weight.weight();
       //TODO: GO BACK TO START (NAVIGATION)
       
       //TODO: DROP CAN (HANDLING)
       
       //TODO: RESTART (WHILE LOOP?)
-      
+     
 
      
       // exit when esc pressed
