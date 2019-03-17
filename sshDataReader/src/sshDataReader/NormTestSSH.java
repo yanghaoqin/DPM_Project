@@ -46,6 +46,7 @@ public class NormTestSSH {
     for (int i = 1; i <= SETS; i++) {
 
       // write out to file with auto-incrementing file name
+      // R G B Y
       FileWriter fw = new FileWriter("Data" + i + ".csv");
       PrintWriter writer = new PrintWriter(fw);
 

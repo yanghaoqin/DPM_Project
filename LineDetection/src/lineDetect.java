@@ -37,7 +37,6 @@ public class lineDetect {
   private static final EV3LargeRegulatedMotor RIGHT_MOTOR =
       new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
 
-
   /**
    * Port for light sensor
    */
@@ -163,8 +162,6 @@ public class lineDetect {
       writer.close();
       System.exit(0);
     }
-
-
   }
 
   /**
