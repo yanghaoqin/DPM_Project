@@ -24,9 +24,9 @@ public class CanCalibrator {
   public static double[] standard_deviation = new double[3];
 
   // RGB indexes
-  private static final int RED_INDEX = 0;
-  private static final int GREEN_INDEX = 1;
-  private static final int BLUE_INDEX = 2;
+  private static final int RED_INDEX = 4;
+  private static final int GREEN_INDEX = 2;
+  private static final int BLUE_INDEX = 1;
   private static final int YELLOW_INDEX = 3;
 
 
