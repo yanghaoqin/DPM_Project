@@ -333,7 +333,7 @@ public class project {
       } else if (colorIndex == 3) {
         LCD.drawString("Yellow Can", 0, 1);
       }
-      
+      //TODO: YUNHAO, PLS MODIFY THE COLOUR CODE
     
       WeightID weight = new WeightID(left, leftcsData); //TODO: THIS WILL BE PLACED IN SEARCH ALGORITHM AFTERWARDS maybe?
       weight.weight();
