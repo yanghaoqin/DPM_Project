@@ -18,6 +18,7 @@ public class DoubleLightLocalization {
   private float[] RightcolorValue;
   
   private static final double SENSOR_TOWHEEL = 12.6; 
+  private static final double BACK_DIST = 15.6; 
   /**
    * 
    * @param odometer Instance of the Odometer class 
@@ -57,19 +58,20 @@ public class DoubleLightLocalization {
     odometer.setTheta(0);
     
     //Drive back 20cm and turn 90 degree facing Y axis
-    RIGHT_MOTOR.rotate(-Navigation.convertDistance(project.WHEEL_RAD, 20), true);
-    LEFT_MOTOR.rotate(-Navigation.convertDistance(project.WHEEL_RAD, 20), false);
-    reorientRobot(Math.PI/2);
+    RIGHT_MOTOR.rotate(-Navigation.convertDistance(project.WHEEL_RAD, BACK_DIST), true);
+    LEFT_MOTOR.rotate(-Navigation.convertDistance(project.WHEEL_RAD, BACK_DIST), false);
     
+    reorientRobot(Math.PI/2);
     // Drive to y axis and initialize x
     travelToLine();
     odometer.setX(SENSOR_TOWHEEL);
     odometer.setTheta(90);
     
     // Drive back for 20cm and then localize at the origin
-    RIGHT_MOTOR.rotate(-Navigation.convertDistance(project.WHEEL_RAD, 20), true);
-    LEFT_MOTOR.rotate(-Navigation.convertDistance(project.WHEEL_RAD, 20), false);
+    RIGHT_MOTOR.rotate(-Navigation.convertDistance(project.WHEEL_RAD, BACK_DIST), true);
+    LEFT_MOTOR.rotate(-Navigation.convertDistance(project.WHEEL_RAD, BACK_DIST), false);
     travelToOrigin();
+    System.exit(0);
    
   }
 
@@ -81,8 +83,8 @@ public class DoubleLightLocalization {
     project.LEFT_MOTOR.setAcceleration(6000);
     project.RIGHT_MOTOR.setAcceleration(6000);
     
-    project.LEFT_MOTOR.setSpeed(150);
-    project.RIGHT_MOTOR.setSpeed(150);
+    project.LEFT_MOTOR.setSpeed(200);
+    project.RIGHT_MOTOR.setSpeed(200);
 
 
     boolean counter_left = true;
@@ -90,7 +92,7 @@ public class DoubleLightLocalization {
     while (counter_left || counter_right) {
       if(counter_left) {
         project.LEFT_MOTOR.forward();
-      
+        
       }
       
       if(counter_right) {
@@ -104,7 +106,7 @@ public class DoubleLightLocalization {
         Sound.beep();
         counter_left = false;
         try {
-          Thread.sleep(500);
+          Thread.sleep(200);
         }
         catch(Exception e) {
           
@@ -125,7 +127,7 @@ public class DoubleLightLocalization {
         Sound.buzz();
         counter_right = false;
         try {
-          Thread.sleep(500);
+          Thread.sleep(200);
         }
         catch(Exception e) {
           
@@ -186,8 +188,8 @@ public class DoubleLightLocalization {
     }
 
     // set Speed
-    project.LEFT_MOTOR.setSpeed(100);
-    project.RIGHT_MOTOR.setSpeed(100);
+    project.LEFT_MOTOR.setSpeed(200);
+    project.RIGHT_MOTOR.setSpeed(200);
 
     // rotate motors at set speed
 
@@ -232,8 +234,8 @@ public class DoubleLightLocalization {
     reorientRobot(mTheta);
 
     //Setting the speed and proceed to the origin point
-    project.LEFT_MOTOR.setSpeed(150);
-    project.RIGHT_MOTOR.setSpeed(150);
+    project.LEFT_MOTOR.setSpeed(180);
+    project.RIGHT_MOTOR.setSpeed(180);
     project.LEFT_MOTOR.rotate(Navigation.convertDistance(project.WHEEL_RAD, hypot), true);
     project.RIGHT_MOTOR.rotate(Navigation.convertDistance(project.WHEEL_RAD, hypot), false);
     
@@ -246,6 +248,8 @@ public class DoubleLightLocalization {
     project.RIGHT_MOTOR.stop(false);
   
   }
+  
+
   
  
 }

@@ -17,7 +17,7 @@ import ca.mcgill.ecse211.project.*;
 public class USLocalizer {
 
 	// vehicle constants
-	private static final int ROTATION_SPEED = 100;
+	private static final int ROTATION_SPEED = 300;
 	private double deltaTheta;
 
 	private Odometer odometer;
@@ -113,7 +113,7 @@ public class USLocalizer {
 			deltaTheta = 225 - (angleA + angleB) / 2 + 180;
 		}
 
-		turningAngle = deltaTheta + odometer.getXYT()[2];
+		turningAngle = deltaTheta + odometer.getXYT()[2] + 5;
 
 		// rotate robot to the theta = 0.0 using turning angle and we account for small
 		// error
@@ -121,7 +121,8 @@ public class USLocalizer {
 		rightMotor.rotate(convertAngle(project.WHEEL_RAD, project.TRACK, turningAngle), false);
 
 		// set theta = 0.0
-		odometer.setXYT(0.0, 0.0, 0.0);
+		odometer.setTheta(0);
+		odometer.Theta = odometer.getXYT()[2];
 		
 	}
 
@@ -172,14 +173,15 @@ public class USLocalizer {
 			deltaTheta = 225 - (angleA + angleB) / 2;
 		}
 
-		turningAngle = deltaTheta + odometer.getXYT()[2];
+		turningAngle = deltaTheta + odometer.getXYT()[2] + 5;
 
 		// rotate robot to the theta = 0.0 and we account for small error
 		leftMotor.rotate(-convertAngle(project.WHEEL_RAD, project.TRACK, turningAngle ), true);
 		rightMotor.rotate(convertAngle(project.WHEEL_RAD, project.TRACK, turningAngle ), false);
 
 		// set odometer to theta = 0
-		odometer.setXYT(0.0, 0.0, 0.0);
+		odometer.setTheta(0);
+		odometer.Theta = odometer.getXYT()[2];
 
 	}
 
