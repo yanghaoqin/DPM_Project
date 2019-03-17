@@ -320,23 +320,21 @@ public class project {
       Sound.beep(); //beeps 5 times (beta demo requirement)
       
       //TODO: START SEARCH THREAD (INSIDE SEARCH, WE WILL START CAN ID AND WEIGHING AND HANDLING AND WHEN SEARCH TERMINATES WE GET BACK HERE)
-      Search search = new Search(odometer, usDistance, usData);
+      Search search = new Search(odometer, usDistance, usData, lightColor, lightData, LCD);
       search.run();
-      ColorDetection colDet = new ColorDetection(usDistance, usData, lightColor, lightData, LCD);
-      int colorIndex = colDet.rotateSensorDetect();
-      if (colorIndex == 0) {
-        LCD.drawString("Red Can", 0, 1);
-      } else if (colorIndex == 1) {
-        LCD.drawString("Green Can", 0, 1);
-      } else if (colorIndex == 2) {
-        LCD.drawString("Blue Can", 0, 1);
-      } else if (colorIndex == 3) {
-        LCD.drawString("Yellow Can", 0, 1);
-      }
-      //TODO: YUNHAO, PLS MODIFY THE COLOUR CODE
+      
+      //TODO: BETA DEMO ONLY --> GO TO UPPER RIGHT CORNER
+      nav.travelTo(zone_UR_x, zone_UR_y); //goes to upper right corner
+      Sound.beep();
+      Sound.beep();
+      Sound.beep();
+      Sound.beep();
+      Sound.beep(); //beep 5 times (beta demo requirement)
+      //end of beta demo
+     
     
       WeightID weight = new WeightID(left, leftcsData); //TODO: THIS WILL BE PLACED IN SEARCH ALGORITHM AFTERWARDS maybe?
-      weight.weight();
+      weight.weight(); //TODO: COMMENT OUT FOR BETA DEMO
       //TODO: GO BACK TO START (NAVIGATION)
       
       //TODO: DROP CAN (HANDLING)

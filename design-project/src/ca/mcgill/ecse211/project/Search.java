@@ -2,6 +2,7 @@ package ca.mcgill.ecse211.project;
 
 import ca.mcgill.ecse211.project.MotorSweep;
 import lejos.hardware.Sound;
+import lejos.hardware.lcd.TextLCD;
 import lejos.robotics.SampleProvider;
 import ca.mcgill.ecse211.odometer.*;
 import static ca.mcgill.ecse211.project.project.LEFT_MOTOR;
@@ -32,19 +33,27 @@ public class Search extends Thread{
     private static final double CAN_CLOSE = 10; //closer distance at which there must be a can. robot must stop as to not hit can. TODO: TWEAK
     private float angleTacho; //tacho count for angle at which can detected
     private boolean isRed; //TODO: CHANGE WHEN NEEDED true if red team, false if green team
-   private boolean isForward; //true if robot going towards end of search zone, false if robot going towards start of search zone
-    
+    private boolean isForward; //true if robot going towards end of search zone, false if robot going towards start of search zone
+    private SampleProvider lightColor; //to call can colour id
+    private float[] lightData; //to call colour id
+    private TextLCD lcd; //to call colour id
    /**
     * The constructor for the Search class.
     * 
     * @param odo the Odometer of the robot
     * @param usDistance the SampleProvider for the ultrasonic sensor
     * @param usData the array in which the samples can be stored
+   * @param lcd 
+   * @param lightData 
+   * @param lightColor 
     */
-    public Search(Odometer odo, SampleProvider usDistance, float[] usData) {
+    public Search(Odometer odo, SampleProvider usDistance, float[] usData, SampleProvider lightColor, float[] lightData, TextLCD lcd) {
       this.odo = odo;
       this.usDistance = usDistance;
       this.usData = usData;
+      this.lightColor = lightColor;
+      this.lightData = lightData;
+      this.lcd = lcd;
     }
     
     
@@ -62,28 +71,12 @@ public class Search extends Thread{
       motorSweep.startSensor();
       motorThread.start();
       
-      double mCoord; //main coord
-      double uLimit; //upper limit
-      double lLimit; //lower limit
-      double sCoord; //secondary coord
-      double rLimit; //right limit
+      
+      float angle; //angle at which the can is located
       
       boolean canFound = false; //turns to true when a can is found
       
-   /*   if (isRed) {
-        mCoord = odo.getXYT()[0]; //main coord we need to watch is x
-        uLimit = URx; //when x var of robot position reaches upper right x value, robot must turn around
-        lLimit = LLx; //when x var of robot position reaches lower left x value, robot must turn around
-        sCoord = odo.getXYT()[1]; //second coord we need to watch is y
-        rLimit = URy; //when y var reaches upper right y value, search is done
-      }
-      else { //is green
-        mCoord = odo.getXYT()[1]; //coord we need to watch is y
-        uLimit = URy; //when y var of robot position reaches upper right y value, robot must turn around
-        lLimit = LLy; //when y var of robot position reaches lower left y value, robot must turn around
-        sCoord = odo.getXYT()[0]; //second coord we need to watch is x
-        rLimit = URx; //when x var reaches upper right x value, search is done
-      } */
+   
       //LET'S ASSUME WE START FROM LL CORNER
       
       LEFT_MOTOR.setSpeed(SPEED);
@@ -92,24 +85,16 @@ public class Search extends Thread{
       RIGHT_MOTOR.forward();
       isForward = true;
       
-       while (true) { //loop for whole search
-   //     while ((mCoord <= uLimit) && (mCoord >= lLimit) && ((sCoord <= rLimit && !isRed) || (sCoord >= rLimit && isRed))) { //while still in search zone
-          while ((odo.getXYT()[1] <= project.zone_UR_y) && (odo.getXYT()[1] >= project.zone_LL_y) && (odo.getXYT()[0] <= project.zone_UR_x)) {
-        /*    if (isRed) {
-            mCoord = odo.getXYT()[0];
-            sCoord = odo.getXYT()[1];
-          }
-          else {
-           mCoord = odo.getXYT()[1];
-           mCoord = odo.getXYT()[0];
-          }*/
+      while (true) { //loop for whole search
+        while ((odo.getXYT()[1] <= project.zone_UR_y) 
+            && (odo.getXYT()[1] >= project.zone_LL_y) 
+            && (odo.getXYT()[0] <= project.zone_UR_x)) { //while still in search zone
           double distance = medianFilter();
           if (distance < CAN) { //can is detected
             motorSweep.stopSensor(); //motor stops sweeping
             angleTacho = SENSOR_MOTOR.getTachoCount();
-            float angle = angleTacho - motorSweep.straightTacho; //find angle at which robot must rotate to keep going straight to find can
-            canFound = true;
-            
+            angle = angleTacho - motorSweep.straightTacho; //find angle at which robot must rotate to keep going straight to find can
+                        
             LEFT_MOTOR.stop();
             RIGHT_MOTOR.stop();
             
@@ -117,72 +102,130 @@ public class Search extends Thread{
             LEFT_MOTOR.rotate(convertAngle(WHEEL_RAD, TRACK, angle), false);
             //turns to that angle
             
-           break;    
+            LEFT_MOTOR.setSpeed(SPEED);
+            RIGHT_MOTOR.setSpeed(SPEED);
+            LEFT_MOTOR.forward();
+            RIGHT_MOTOR.forward(); //now robot moving forward towards can
             
-         }
-          
+            while (true) {    
+              distance = medianFilter();
+              if (distance < CAN_CLOSE) { //can is detected
+                LEFT_MOTOR.stop();
+                RIGHT_MOTOR.stop(); //robot stops when can detected
+                
+                ColorDetection colDet = new ColorDetection(usDistance, usData, lightColor, lightData, lcd);
+                int colorIndex = colDet.rotateSensorDetect();
+                
+                if (colorIndex == 0) {
+                  lcd.drawString("Red Can", 0, 1);
+                } else if (colorIndex == 1) {
+                  lcd.drawString("Green Can", 0, 1);
+                } else if (colorIndex == 2) {
+                  lcd.drawString("Blue Can", 0, 1);
+                } else if (colorIndex == 3) {
+                  lcd.drawString("Yellow Can", 0, 1);
+                }//TODO: YUNHAO, PLS MODIFY THE COLOUR CODE
+                
+                if (colorIndex == Wifi.GreenTeam) { //only fr beta demo
+                  Sound.beep();
+                  Sound.beep();
+                  Sound.beep();
+                  Sound.beep();
+                  Sound.beep();
+                  Sound.beep();
+                  Sound.beep();
+                  Sound.beep();
+                  Sound.beep();
+                  Sound.beep();
+                  //for beta demo, we must get away from can so:
+                  LEFT_MOTOR.setSpeed(SPEED);
+                  RIGHT_MOTOR.setSpeed(SPEED);
+                  LEFT_MOTOR.backward();
+                  RIGHT_MOTOR.backward(); //now robot moving away from can
+                  
+                  while (true) {
+                    distance = medianFilter();
+                    if (distance >= CAN_CLOSE) { 
+                      LEFT_MOTOR.stop();
+                      RIGHT_MOTOR.stop(); //robot stops when can detected
+                      LEFT_MOTOR.rotate(-convertAngle(WHEEL_RAD, TRACK, angle), true);
+                      RIGHT_MOTOR.rotate(convertAngle(WHEEL_RAD, TRACK, angle), false);
+                      break; //at this point robot should be far enough from can to be able to travel to upper right corner of search
+                    }
+                  }
+                  return; //exit search class, return to project class
+                } //we found the right can
+                else { //not the right can
+                  LEFT_MOTOR.setSpeed(SPEED);
+                  RIGHT_MOTOR.setSpeed(SPEED);
+                  LEFT_MOTOR.backward();
+                  RIGHT_MOTOR.backward(); //now robot moving away from can
+                  
+                  while (true) {
+                    distance = medianFilter();
+                    if (distance >= CAN_CLOSE) { 
+                      LEFT_MOTOR.stop();
+                      RIGHT_MOTOR.stop(); //robot stops when can detected
+                      LEFT_MOTOR.rotate(-convertAngle(WHEEL_RAD, TRACK, angle), true);
+                      RIGHT_MOTOR.rotate(convertAngle(WHEEL_RAD, TRACK, angle), false);
+                      break; //at this point robot should be back on search track to look for next can, exits the while loop necessary for backtracking
+                    }
+
+                  }
+                  break; //exits the can found while loop
+                }
+
+              }
+
+            }
+
+          }
+
         }
-      
-       if (canFound) { //if we exited the previous while loop because a can was detected by US
-       LEFT_MOTOR.setSpeed(SPEED);
-       RIGHT_MOTOR.setSpeed(SPEED);
-       LEFT_MOTOR.forward();
-       RIGHT_MOTOR.forward(); //now robot moving forward towards can
-       
-       while (true) {
-         double distance = medianFilter();
-         if (distance < CAN_CLOSE) { //can is detected
-           LEFT_MOTOR.stop();
-           RIGHT_MOTOR.stop(); //robot stops when can detected
-           break;
-         }     
-       }
+        //this while loop is exited when robot not in search zone anymore
+        if (odo.getXYT()[0] <= project.zone_UR_x) { //robot still in search zone --> we need to make it change direction
+          LEFT_MOTOR.stop();
+          RIGHT_MOTOR.stop(); 
+          
+          if (isForward) { //must turn right
+           RIGHT_MOTOR.rotate(-convertAngle(WHEEL_RAD, TRACK, 90), true); //turns 90 degrees right
+           LEFT_MOTOR.rotate(convertAngle(WHEEL_RAD, TRACK, 90), false);
+           
+           RIGHT_MOTOR.rotate(convertDistance(WHEEL_RAD, TILE), true);
+           LEFT_MOTOR.rotate(convertDistance(WHEEL_RAD, TILE), false); //moves to next gridline
+           
+           RIGHT_MOTOR.rotate(-convertAngle(WHEEL_RAD, TRACK, 90), true); //turns 180 degrees right
+           LEFT_MOTOR.rotate(convertAngle(WHEEL_RAD, TRACK, 90), false);
+           
+           isForward = false; //since we changed direction
+          }
+         else { //must turn left
+           LEFT_MOTOR.rotate(-convertAngle(WHEEL_RAD, TRACK, 90), true); //turns 90 degrees left
+           RIGHT_MOTOR.rotate(convertAngle(WHEEL_RAD, TRACK, 90), false);
+           
+           RIGHT_MOTOR.rotate(convertDistance(WHEEL_RAD, TILE), true);
+           LEFT_MOTOR.rotate(convertDistance(WHEEL_RAD, TILE), false); //moves to next gridline
+           
+           LEFT_MOTOR.rotate(-convertAngle(WHEEL_RAD, TRACK, 90), true); //turns 180 degrees left
+           RIGHT_MOTOR.rotate(convertAngle(WHEEL_RAD, TRACK, 90), false);
+           
+           isForward = true; //since we changed direction
+         }  
+         LEFT_MOTOR.setSpeed(SPEED);
+         RIGHT_MOTOR.setSpeed(SPEED);
+         LEFT_MOTOR.forward();
+         RIGHT_MOTOR.forward();
+        }
+        else if (odo.getXYT()[0] <= project.zone_UR_x) { //robot reached rLimit. technically should not happen since the robot should not have to go through whole search zone without finding a can
+          LEFT_MOTOR.stop();
+          RIGHT_MOTOR.stop(); 
+          motorSweep.stopSensor(); //motor stops sweeping
+          //TODO: SHOULD WE END THE MOTORSWEEP THREAD SINCE WE DONT NEED IT ANYMORE?
+          return; //ends search
+        }
+      }      
      }
-    // if (isRed && sCoord >= rLimit || (!isRed && sCoord <= rLimit) ) { //robot still in search zone --> we need to make it change direction
-      if (odo.getXYT()[0] <= project.zone_UR_x) {
-       LEFT_MOTOR.stop();
-       RIGHT_MOTOR.stop(); 
-       
-       if (isForward) { //must turn right
-        RIGHT_MOTOR.rotate(-convertAngle(WHEEL_RAD, TRACK, 90), true); //turns 90 degrees right
-        LEFT_MOTOR.rotate(convertAngle(WHEEL_RAD, TRACK, 90), false);
-        
-        RIGHT_MOTOR.rotate(convertDistance(WHEEL_RAD, TILE), true);
-        LEFT_MOTOR.rotate(convertDistance(WHEEL_RAD, TILE), false); //moves to next gridline
-        
-        RIGHT_MOTOR.rotate(-convertAngle(WHEEL_RAD, TRACK, 90), true); //turns 180 degrees right
-        LEFT_MOTOR.rotate(convertAngle(WHEEL_RAD, TRACK, 90), false);
-        
-        isForward = false; //since we changed direction
-       }
-      else { //must turn left
-        LEFT_MOTOR.rotate(-convertAngle(WHEEL_RAD, TRACK, 90), true); //turns 90 degrees left
-        RIGHT_MOTOR.rotate(convertAngle(WHEEL_RAD, TRACK, 90), false);
-        
-        RIGHT_MOTOR.rotate(convertDistance(WHEEL_RAD, TILE), true);
-        LEFT_MOTOR.rotate(convertDistance(WHEEL_RAD, TILE), false); //moves to next gridline
-        
-        LEFT_MOTOR.rotate(-convertAngle(WHEEL_RAD, TRACK, 90), true); //turns 180 degrees left
-        RIGHT_MOTOR.rotate(convertAngle(WHEEL_RAD, TRACK, 90), false);
-        
-        isForward = true; //since we changed direction
-      }  
-      LEFT_MOTOR.setSpeed(SPEED);
-      RIGHT_MOTOR.setSpeed(SPEED);
-      LEFT_MOTOR.forward();
-      RIGHT_MOTOR.forward();
-     }
-     
-     else if (odo.getXYT()[0] <= project.zone_UR_x) { //robot reached rLimit. technically should not happen since the robot should not have to go through whole search zone without finding a can
-       LEFT_MOTOR.stop();
-       RIGHT_MOTOR.stop(); 
-       motorSweep.stopSensor(); //motor stops sweeping
-       //TODO: SHOULD WE END THE MOTORSWEEP THREAD SINCE WE DONT NEED IT ANYMORE?
-       //breaks out of big while loop and hence ends search
-     }
-      
-     }
-    }
+ 
     /**
      * This is a median filter. The filter takes 5 consecutive readings from the ultrasonic sensor,
      * amplifies them to increase sensor sensitivity, sorts them, and picks the median to minimize the
