@@ -33,7 +33,7 @@ public class Odometer extends OdometerData implements Runnable {
 	/**
 	 * Odometer update period (in ms) 
 	 */
-	private static final long ODOMETER_PERIOD = 40;
+	private static final long ODOMETER_PERIOD = 35;
 
 	/**
 	 * A constant factor that can be applied to convert angular units in degrees to

@@ -17,7 +17,7 @@ public class DoubleLightLocalization {
   private float[] LeftcolorValue;
   private float[] RightcolorValue;
   
-  private static final double SENSOR_TOWHEEL = 12.6; 
+  public static final double SENSOR_TOWHEEL = 12.6; 
   private static final double BACK_DIST = 15.6; 
   /**
    * 
@@ -54,7 +54,7 @@ public class DoubleLightLocalization {
 
 	// Drive to X axis and initialize Y
     travelToLine();
-    odometer.setY(SENSOR_TOWHEEL);
+    odometer.setY(SENSOR_TOWHEEL + project.TILE);
     odometer.setTheta(0);
     
     //Drive back 20cm and turn 90 degree facing Y axis
@@ -64,15 +64,17 @@ public class DoubleLightLocalization {
     reorientRobot(Math.PI/2);
     // Drive to y axis and initialize x
     travelToLine();
-    odometer.setX(SENSOR_TOWHEEL);
+    odometer.setX(SENSOR_TOWHEEL + project.TILE);
     odometer.setTheta(90);
     
     // Drive back for 20cm and then localize at the origin
     RIGHT_MOTOR.rotate(-Navigation.convertDistance(project.WHEEL_RAD, BACK_DIST), true);
     LEFT_MOTOR.rotate(-Navigation.convertDistance(project.WHEEL_RAD, BACK_DIST), false);
     travelToOrigin();
-    System.exit(0);
-   
+    
+    odometer.setXYT(project.TILE, project.TILE, odometer.getXYT()[2]);
+    odometer.Theta = 0;
+    
   }
 
   /**
@@ -178,7 +180,7 @@ public class DoubleLightLocalization {
    * @param theta RADIAN value of the angle that the robot will adjust its orientation
    * 		For adjusting clockwise the parameter should be positive, for ccw adjustment please input a negative radian
    */
-  public void reorientRobot(double theta) {
+  public static void reorientRobot(double theta) {
 
     // ensures minimum angle for turning
     if (theta > Math.PI) {
@@ -220,8 +222,8 @@ public class DoubleLightLocalization {
     currx = odometer.getXYT()[0];
     curry = odometer.getXYT()[1];
 
-    deltax = 0 - currx;
-    deltay = 0 - curry;
+    deltax = project.TILE - currx;
+    deltay = project.TILE - curry;
 
     // Calculate the angle to turn around
     currTheta = (odometer.getXYT()[2]) * Math.PI / 180;
@@ -246,7 +248,8 @@ public class DoubleLightLocalization {
     // stop vehicle
     project.LEFT_MOTOR.stop(true);
     project.RIGHT_MOTOR.stop(false);
-  
+    
+    
   }
   
 
