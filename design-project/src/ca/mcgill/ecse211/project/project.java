@@ -114,14 +114,14 @@ public class project {
    * EV3 brick.
    */
   public static final EV3LargeRegulatedMotor LEFT_MOTOR =
-      new EV3LargeRegulatedMotor(LocalEV3.get().getPort("A"));
+      new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
 
   /**
    * The instance of the right wheel large EV3 motor. The right motor is connected to port D on the
    * EV3 brick.
    */
   public static final EV3LargeRegulatedMotor RIGHT_MOTOR =
-      new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
+      new EV3LargeRegulatedMotor(LocalEV3.get().getPort("A"));
 
   /**
    * Whether robot is currently in color detection
@@ -261,7 +261,7 @@ public class project {
       //TODO: LOCALIZATION
       (new Thread(odometer)).start();
       (new Thread(display)).start();
-      Navigation navi = new Navigation(odometer);
+    //  Navigation navi = new Navigation(odometer);
       DoubleLightLocalization dll = new DoubleLightLocalization(odometer,left, right, leftcsData, rightcsData);
       dll.DoubleLocalizer();
       
@@ -283,33 +283,50 @@ public class project {
       } //theta might have to be changed if not the same reference system as in lab 5
       
       Navigation nav = new Navigation(odometer);
+      NavigationWithCorr navWc = new NavigationWithCorr(odometer,left,right,leftcsData, rightcsData);
+   //   navWc.navigateTo(1, 1,tunnel_LL_x -1, tunnel_LL_y);
+     // navWc.locaAtTunnel();
       
+//      nav.turnTo(90);
+//      while(true) {
+//        System.out.println(odometer.getXYT()[0]);
+//        LEFT_MOTOR.forward();
+//        RIGHT_MOTOR.forward();
+//        if (odometer.getXYT()[0] == 3) {
+//          break;
+//        }
+//      }
+      LightLocalizer ll = new LightLocalizer(odometer, LEFT_MOTOR, RIGHT_MOTOR, Right_Sensor, null);
       //TODO: READCH LOWER LEFT OF TUNNEL (NAVIGATION)
+   // nav.travelTo(zone_LL_x, tunnel_LL_y);
       int tunnelLength;
-      if ((tunnel_LL_x < tunnel_UR_x) && (tunnel_LL_y < tunnel_UR_y)) {
-        nav.travelTo(tunnel_LL_x + TILE/2, tunnel_LL_y - TILE/2);
-        nav.turnTo(0); //TODO: MIGHT NEED TO FIX TURNTO
+   //   if ((tunnel_LL_x < tunnel_UR_x) && (tunnel_LL_y < tunnel_UR_y)) {
+      if ((tunnel_UR_x - tunnel_LL_x) < (tunnel_UR_y - tunnel_LL_y)) { //vertical
+        nav.travelTo(tunnel_LL_x + 0.5, tunnel_LL_y - 0.5);
+      //  nav.turnTo(0); //TODO: MIGHT NEED TO FIX TURNTO
+        ll.turnTo(0*TO_RAD);       
+      
         tunnelLength = tunnel_UR_y - tunnel_LL_y + 1; //+1 to account for half tile before and after
       } //turn at 0 based on orientation of tunnel
-      else if ((tunnel_LL_x > tunnel_UR_x) && (tunnel_LL_y < tunnel_UR_y)) {
-        nav.travelTo(tunnel_LL_x + TILE/2, tunnel_LL_y + TILE/2);
+    /*  else if ((tunnel_LL_x > tunnel_UR_x) && (tunnel_LL_y < tunnel_UR_y)) {
+        nav.travelTo(tunnel_LL_x + 0.5, tunnel_LL_y + 0.5);
         nav.turnTo(270);
         tunnelLength = tunnel_LL_x - tunnel_UR_x + 1;
       }
       else if ((tunnel_LL_x > tunnel_UR_x) && (tunnel_LL_y > tunnel_UR_y)) {
-        nav.travelTo(tunnel_LL_x - TILE/2, tunnel_LL_y + TILE/2);
+        nav.travelTo(tunnel_LL_x - 0.5, tunnel_LL_y + 0.5);
         nav.turnTo(180);
         tunnelLength = tunnel_LL_y - tunnel_UR_y + 1;
-      }
-      else {
-        nav.travelTo(tunnel_LL_x - TILE/2, tunnel_LL_y - TILE/2);
-        nav.turnTo(90);
+      }*/
+      else { //horizontal
+        nav.travelTo(tunnel_LL_x - 0.5, tunnel_LL_y + 0.5);
+       ll.turnTo(90*TO_RAD);
         tunnelLength = tunnel_UR_x - tunnel_LL_x + 1;
       }
-   
+   /*
       //TODO: MAKE IT GO THROUGH TUNNEL (NAVIGATION)
-      RIGHT_MOTOR.rotate(Navigation.convertDistance(WHEEL_RAD, tunnelLength), true);
-      LEFT_MOTOR.rotate(Navigation.convertDistance(WHEEL_RAD, tunnelLength), false);
+      RIGHT_MOTOR.rotate(Navigation.convertDistance(WHEEL_RAD, tunnelLength*TILE), true);
+      LEFT_MOTOR.rotate(Navigation.convertDistance(WHEEL_RAD, tunnelLength*TILE), false);
       
       //TODO: REACH SEARCH ZONE (NAVIGATION) AT LOWER LEFT CORNER
       nav.travelTo(zone_LL_x, zone_LL_y);
@@ -339,7 +356,7 @@ public class project {
       
       //TODO: DROP CAN (HANDLING)
       
-      //TODO: RESTART (WHILE LOOP?)
+      //TODO: RESTART (WHILE LOOP?)*/
      
 
      

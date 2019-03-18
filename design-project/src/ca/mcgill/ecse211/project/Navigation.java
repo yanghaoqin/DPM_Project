@@ -251,21 +251,22 @@ public class Navigation extends Thread {
     LEFT_MOTOR.setAcceleration(TURN_ACCELERATION);
     RIGHT_MOTOR.setAcceleration(TURN_ACCELERATION);
     
-    //position[2] = odo.getXYT()[2]; //get current theta value
+    position[2] = odo.getXYT()[2]; //get current theta value
 
     // ensure angle is positive and within 360
     double minTheta = ((Theta - odo.getXYT()[2]) + FULL_CIRCLE) % FULL_CIRCLE;
 
-    if (minTheta > INITIAL_ANGLE && minTheta <= HALF_CIRCLE) {
-      // angle is already minimum angle, robot should turn clockwise
-      RIGHT_MOTOR.rotate(-convertAngle(WHEEL_RAD, TRACK, minTheta), true);
-      LEFT_MOTOR.rotate(convertAngle(WHEEL_RAD, TRACK, minTheta), false);
-    } else if (minTheta > HALF_CIRCLE && minTheta < FULL_CIRCLE) {
+      if (minTheta > INITIAL_ANGLE && minTheta <= HALF_CIRCLE) {
+   // angle is already minimum angle, robot should turn clockwise
+        RIGHT_MOTOR.rotate(-convertAngle(WHEEL_RAD, TRACK, minTheta), true);
+        LEFT_MOTOR.rotate(convertAngle(WHEEL_RAD, TRACK, minTheta), false);
+      }     
+     else if (minTheta > HALF_CIRCLE && minTheta < FULL_CIRCLE) {
       // angle is not minimum angle, robot should turn counter-clockwise to the
       // complementary angle of a full circle 360 degrees
-      minTheta = FULL_CIRCLE - minTheta;
-      RIGHT_MOTOR.rotate(convertAngle(WHEEL_RAD, TRACK, minTheta), true);
-      LEFT_MOTOR.rotate(-convertAngle(WHEEL_RAD, TRACK, minTheta), false);
+     minTheta = FULL_CIRCLE - minTheta;
+   RIGHT_MOTOR.rotate(convertAngle(WHEEL_RAD, TRACK, minTheta), true);
+  LEFT_MOTOR.rotate(-convertAngle(WHEEL_RAD, TRACK, minTheta), false);
     }
 
     isNavigating = false; // update navigation status
