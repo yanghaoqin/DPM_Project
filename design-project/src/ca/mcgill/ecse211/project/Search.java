@@ -168,6 +168,14 @@ public class Search extends Thread{
                       RIGHT_MOTOR.stop(); //robot stops when can detected
                       LEFT_MOTOR.rotate(-convertAngle(WHEEL_RAD, TRACK, angle), true);
                       RIGHT_MOTOR.rotate(convertAngle(WHEEL_RAD, TRACK, angle), false);
+                    
+                      LEFT_MOTOR.setSpeed(SPEED);
+                      RIGHT_MOTOR.setSpeed(SPEED);
+                      LEFT_MOTOR.forward();
+                      RIGHT_MOTOR.forward();
+                      LEFT_MOTOR.rotate(convertDistance(WHEEL_RAD, 10)); //TODO: TWEAK 10
+                      RIGHT_MOTOR.rotate(convertDistance(WHEEL_RAD, 10));
+                      
                       break; //at this point robot should be back on search track to look for next can, exits the while loop necessary for backtracking
                     }
 
