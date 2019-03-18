@@ -1,182 +1,270 @@
 package ca.mcgill.ecse211.project;
 
-import lejos.hardware.Sound;
-import lejos.hardware.lcd.TextLCD;
 import lejos.robotics.SampleProvider;
-import static ca.mcgill.ecse211.project.project.SENSOR_MOTOR;
-import java.util.Arrays;
+import static ca.mcgill.ecse211.project.project.BLUE_COLOR;
+import static ca.mcgill.ecse211.project.project.YELLOW_COLOR;
+import static ca.mcgill.ecse211.project.project.GREEN_COLOR;
+import static ca.mcgill.ecse211.project.project.RED_COLOR;
 
 /**
- * This class implements the rotation sensor to detect the color of an unknown can. After the can is
- * placed in front of the can for a certain time (over 2 second), the isCan() method will lead the
- * class through to the detection of color phase.
+ * This class reads the color value. Process it through mean and stdev calculation. 
+ * Then the value is compared with the threshold to determine which color it is or
+ * it is the target color.
+ * @author Antoine Wang
+ * @author Erica de Petrillo
+ * @author Raymond Yang
  * 
- * The sensor motor will bring the color sensor around the can for a half revolution. During the
- * process, 7 readings are taken and the index with the highest frequency will be considered as the
- * read value
- * 
- * After one reading is completed, the information stays on the screen for 6 seconds and then the
- * program is ready to read another color.
- * 
- * @author Yinuo Antoine Wang
- * @author Yunhao Hu
- *
  */
-public class ColorDetection extends Thread {
-  // threshold distance that tells the cart the can is presented
-  private static final double CAN_EXISTS = 10;
+public class CanCalibrator {
 
-  // Fields to poll the US sensor
-  private float[] usData;
-  private SampleProvider usDistance;
+  private SampleProvider lightColor;
+  private float[] lightData;
+  private double std = 0;
+  public static double[] mean = new double[3];
+  public static double[] standard_deviation = new double[3];
 
-  // Fields to poll the Light sensor
-  // 1 for red, 2 for green, 3 for blue, 4 for yellow
-  public int colorIndex;
+  // RGB indexes
+  private static final int RED_INDEX = 4;
+  private static final int GREEN_INDEX = 2;
+  private static final int BLUE_INDEX = 1;
+  private static final int YELLOW_INDEX = 3;
 
-  // Field for calibrator. Used to call Calibrate() to identify the color
-  CanCalibrator calibrator;
-
-  // the display LCD screen object
-  private TextLCD lcd;
 
   /**
-   * Constructor of the class. Sample provider of the color and US sensor and the corrsponding array
-   * to store the value. Also, the instance of LCD textfield created in the mean Lab5 class is
-   * passed in for the update of color information.
    * 
-   * @param usDistance Sample reading buffer for US sensor
-   * @param usData array where distance value is stored
-   * @param lightColor Sample reading buffer for light sensor
-   * @param lightData array where RGB value is stored
-   * @param lcd Screen display instance
+   * This is the constructor of the can Calibrator class. To create an instance of the can Calibrator class, the sample
+   * provider and the array for storing the reading of the sensor is taken in.
+   * 
+   * @param lightColor Sampleprovider of the light sensor
+   * @param lightData array to store the data
    */
-  public ColorDetection(SampleProvider usDistance, float[] usData, SampleProvider lightColor,
-      float[] lightData, TextLCD lcd) {
-    this.usDistance = usDistance;
-    this.usData = usData;
-    this.lcd = lcd;
-    calibrator = new CanCalibrator(lightColor, lightData);
-  }
-
-  public void run() {
-
-    while (true) {
-
-
-      if (isCan()) {
-        lcd.drawString("Object Detected!!!", 0, 0);
-        Sound.beep();
-
-        colorIndex = rotateSensorDetect();
-        if (colorIndex == 0) {
-          lcd.drawString("Red Can", 0, 1);
-        } else if (colorIndex == 1) {
-          lcd.drawString("Green Can", 0, 1);
-        } else if (colorIndex == 2) {
-          lcd.drawString("Blue Can", 0, 1);
-        } else if (colorIndex == 3) {
-          lcd.drawString("Yellow Can", 0, 1);
-        }
-        try {
-          // Wait 6 second for check reading
-          Thread.sleep(6000);
-        } catch (InterruptedException e) {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
-        }
-        lcd.clear();
-
-      }
-
-    }
+  public CanCalibrator(SampleProvider lightColor, float[] lightData) {
+    this.lightColor = lightColor;
+    this.lightData = lightData;
   }
 
   /**
-   * This method polls the color sensor reading, comparing it with the color RGB theoretical value
-   * Every time it completed, the sensor rotate 30 degree ccw to take the next reading The 7
-   * readings are stored in an array and then the majority color index is found in the array. This
-   * index is returned as the read color
-   * 
-   * @return int index of the classified
+   * This is the classifier.
+   * The method Calibrate takes no input. It calls the initialReading() method to retrieve the value of the color reading
+   * Then the value is processed by finding the mean value of R,G and B readings.
+   * Also the standard deviation is later calculated and then the filtered RGB reading is normalized with in the range of 0-1;
+   * At the end, the isColor() method is called. The calculated value is compared with the theoretical threshold to return the integer
+   * value representing the color index
+   * @return int corresponding color index
    */
-  public int rotateSensorDetect() {
-    // Create a array of length 7
-    int[] colorResult = new int[7];
+  public int Calibrate() {
 
-    // Test 7 times
-    for (int i = 0; i < 7; i++) {
-      // Poll, process RGB, and classify
-      colorResult[i] = calibrator.Calibrate();
-      // Move Color sensor motor
-      project.SENSOR_MOTOR.setAcceleration(300);
-      project.SENSOR_MOTOR.setSpeed(300);
-      project.SENSOR_MOTOR.rotate(30, false);
+    // initialize array
+    double[] red_array = new double[50];
+    double[] green_array = new double[50];
+    double[] blue_array = new double[50];
+
+    // take initial reading
+    // record the computed mean for 50 times for rgb
+    for (int i = 0; i < 50; i++) {
+      // each array contains 100 values
+      red_array[i] = initialReading(RED_INDEX);
+      green_array[i] = initialReading(GREEN_INDEX);
+      blue_array[i] = initialReading(BLUE_INDEX);
     }
-    // Color sensor motor return to Original position
-    SENSOR_MOTOR.rotateTo(0, false);
 
-    Arrays.sort(colorResult);
+    // compute to find mean of the 50 means
+    // mean has only 3 values; r,g,b
+    mean[RED_INDEX] = Find_Mean(red_array);
+    mean[GREEN_INDEX] = Find_Mean(green_array);
+    mean[BLUE_INDEX] = Find_Mean(blue_array);
 
-    // Below is the process of finding the majority of the legit elements (-1 values are excluded)
-    int prev = colorResult[0];
-    int count = 1;
-    for (int i = 1; i < colorResult.length; i++) {
-      if (colorResult[i] == prev && colorResult[i] != -1) {
-        count++;
-        if (count > colorResult.length / 2 - 1) {
-          return colorResult[i]; // Find the majority value (being detected after enough times and
-                                 // return that index)
-        }
-      } else {
-        count = 1;
-        prev = colorResult[i];
-      }
-    }
-    return -1; // No majority or no legit values to return
+    // find the standard deviation of each rgb array which contains 100 means
+    standard_deviation[RED_INDEX] = Find_Standard_Deviation(red_array, mean[RED_INDEX]);
+    standard_deviation[GREEN_INDEX] = Find_Standard_Deviation(green_array, mean[GREEN_INDEX]);
+    standard_deviation[BLUE_INDEX] = Find_Standard_Deviation(blue_array, mean[BLUE_INDEX]);
+
+    // normalize the mean to a range of 0 - 1
+    mean = Mean_Normalizer(mean[RED_INDEX], mean[GREEN_INDEX], mean[BLUE_INDEX]);
+
+    // determine which color
+    return isColor();
   }
 
   /**
-   * This method polls the us sensor reading then uses a median filter to process it. Then, if the
-   * median is less than the threshold, the thread sleep for 2 seconds. This is to avoid misreading.
-   * After 2s, if the object is still in front of the cart, the method return true, meaning that a
-   * can is present (DISPLAY: Object detected)
    * 
-   * @return boolean whether there is an object detected
+   * This is the overloaded classifier method. This method takes in an array of rgb value which is the 
+   * pre-defined theoretical threshold. Then the processed RGB data is compared. A boolean will be returned if the color matched
+   * 
+   * @param target Theoretical threshold color RGB value
+   * @return boolean whether the read color corresponding to the target threshold
    */
-  private boolean isCan() {
-    double distance = medianFilter();
-    if (distance < CAN_EXISTS) {
-      try {
-        Thread.sleep(2000);
-      } catch (InterruptedException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
-      }
+  public boolean Calibrate(double[] target) {
 
-      if (distance < CAN_EXISTS) {
-        return true;
-      }
+    // initialize array
+    double[] red_array = new double[50];
+    double[] green_array = new double[50];
+    double[] blue_array = new double[50];
+
+    // take initial reading
+    // record the computed mean for 100 times for rgb
+    for (int i = 0; i < 50; i++) {
+      // each array contains 100 values
+      red_array[i] = initialReading(RED_INDEX);
+      green_array[i] = initialReading(GREEN_INDEX);
+      blue_array[i] = initialReading(BLUE_INDEX);
+    }
+
+    // compute to find mean of the 50 means
+    // mean has only 3 values; r,g,b
+    mean[RED_INDEX] = Find_Mean(red_array);
+    mean[GREEN_INDEX] = Find_Mean(green_array);
+    mean[BLUE_INDEX] = Find_Mean(blue_array);
+
+    // find the standard deviation of each rgb array which contains 100 means
+    standard_deviation[RED_INDEX] = Find_Standard_Deviation(red_array, mean[RED_INDEX]);
+    standard_deviation[GREEN_INDEX] = Find_Standard_Deviation(green_array, mean[GREEN_INDEX]);
+    standard_deviation[BLUE_INDEX] = Find_Standard_Deviation(blue_array, mean[BLUE_INDEX]);
+
+    // normalize the mean to a range of 0 - 1
+    mean = Mean_Normalizer(mean[RED_INDEX], mean[GREEN_INDEX], mean[BLUE_INDEX]);
+
+    // compare the read color value to the target threshold, also compare the stdev to eliminate false readings
+    if (Compare_Standard_Deviation(target[RED_INDEX], standard_deviation[RED_INDEX],
+        mean[RED_INDEX])
+        && Compare_Standard_Deviation(target[GREEN_INDEX], standard_deviation[GREEN_INDEX],
+            mean[GREEN_INDEX])
+        && Compare_Standard_Deviation(target[BLUE_INDEX], standard_deviation[BLUE_INDEX],
+            mean[BLUE_INDEX])) {
+      return false;
     }
     return false;
   }
 
   /**
-   * This is a median filter. The filter takes 5 consecutive readings from the ultrasonic sensor,
-   * amplifies them to increase sensor sensitivity, sorts them, and picks the median to minimize the
-   * influence of false negatives and false positives in sensor readings, if any. The sensor is very
-   * likely to report false negatives.
    * 
-   * @return the median of the five readings, sorted from small to large
+   * Compute the mean
+   * Sum up all values and then divide by the sample size to remove outlier readings
+   * 
+   * @param color_array samples from the color sensor
+   * @return double the mean of the reading
    */
-  private double medianFilter() {
-    double[] arr = new double[5]; // store readings
-    for (int i = 0; i < 5; i++) { // take 5 readingss
-      usDistance.fetchSample(usData, 0); // store reading in buffer
-      arr[i] = usData[0] * 100.0; // signal amplification
+  private double Find_Mean(double[] color_array) {
+    double mean = 0;
+    for (int i = 0; i < color_array.length; i++) {
+      mean = mean + color_array[i];
     }
-    Arrays.sort(arr); // sort readingss
-    return arr[2]; // take median value
+    mean = mean / color_array.length;
+    return mean;
   }
 
+  /**
+   * 
+   * Compute the standard deviation
+   * Takes in the mean value and the samples
+   * Using the sample standard deviation formula to compute the standard deviation
+   * @param color_array sample data point
+   * @param mean average value
+   * @return double standard deviation value of the data set (for a single color reading, like R or G)
+   */
+  private double Find_Standard_Deviation(double[] color_array, double mean) {
+    double stdr_dev = 0;
+    double[] temp_array = new double[color_array.length];
+    for (int i = 0; i < temp_array.length; i++) {
+      temp_array[i] = (color_array[i] - mean) * (color_array[i] - mean);
+    }
+    for (int i = 0; i < temp_array.length; i++) {
+      stdr_dev += temp_array[i];
+    }
+    stdr_dev = Math.sqrt(stdr_dev / (temp_array.length - 1));
+    return stdr_dev;
+  }
+
+  /**
+   * A method to normalize the values to a range from 0 to 1
+   * Divide the RGB value with the euclidian distance.
+   * 
+   * @param red
+   * @param green
+   * @param blue
+   * @return
+   */
+  private double[] Mean_Normalizer(double red, double green, double blue) {
+    double[] rgb = new double[3];
+    double euclidean = (Math.sqrt(red * red + green * green + blue * blue));
+    rgb[0] = red / euclidean;
+    rgb[1] = green / euclidean;
+    rgb[2] = blue / euclidean;
+    return rgb;
+  }
+
+  /**
+   * Find out whether the target value is within 2 standard deviations of the measured readings
+   * If yes, then the color we read can be decided as the target color
+   * Or the read color is defined as a different color
+   * @param target threshold for a certain color
+   * @param strd_dev stdev of a certain color's data set
+   * @param mean mean of a certain color's data set
+   * @return boolean whether the color is considered "different"
+   */
+  private boolean Compare_Standard_Deviation(double target, double strd_dev, double mean) {
+    if (Math.abs(mean - target) < Math.abs(mean - 2 * strd_dev)) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Determines whether measured color is target color by determining whether the values lies in
+   * 2 stdev
+   * @return int color judged (R,G,B or Y)
+   */
+  private int isColor() {
+    if (Compare_Standard_Deviation(YELLOW_COLOR[RED_INDEX], standard_deviation[RED_INDEX],
+        mean[RED_INDEX])
+    	&& Compare_Standard_Deviation(YELLOW_COLOR[GREEN_INDEX], standard_deviation[GREEN_INDEX],
+            mean[GREEN_INDEX])
+        && Compare_Standard_Deviation(YELLOW_COLOR[BLUE_INDEX], standard_deviation[BLUE_INDEX],
+            mean[BLUE_INDEX])) {
+       return YELLOW_INDEX;
+    } else if(Compare_Standard_Deviation(GREEN_COLOR[RED_INDEX], standard_deviation[RED_INDEX],
+        mean[RED_INDEX])
+        && Compare_Standard_Deviation(GREEN_COLOR[GREEN_INDEX], standard_deviation[GREEN_INDEX],
+            mean[GREEN_INDEX])
+        && Compare_Standard_Deviation(GREEN_COLOR[BLUE_INDEX], standard_deviation[BLUE_INDEX],
+            mean[BLUE_INDEX])){
+      return GREEN_INDEX;
+    } else if(Compare_Standard_Deviation(BLUE_COLOR[RED_INDEX], standard_deviation[RED_INDEX],
+        mean[RED_INDEX])
+        && Compare_Standard_Deviation(BLUE_COLOR[GREEN_INDEX], standard_deviation[GREEN_INDEX],
+            mean[GREEN_INDEX])
+        && Compare_Standard_Deviation(BLUE_COLOR[BLUE_INDEX], standard_deviation[BLUE_INDEX],
+            mean[BLUE_INDEX])) {
+      return BLUE_INDEX;
+    } else if(Compare_Standard_Deviation(RED_COLOR[RED_INDEX], standard_deviation[RED_INDEX],
+            mean[RED_INDEX])
+            && Compare_Standard_Deviation(RED_COLOR[GREEN_INDEX], standard_deviation[GREEN_INDEX],
+                mean[GREEN_INDEX])
+            && Compare_Standard_Deviation(RED_COLOR[BLUE_INDEX], standard_deviation[BLUE_INDEX],
+                mean[BLUE_INDEX])) {
+          return RED_INDEX;
+    } else {
+      // other color
+      return -1;
+    }
+  }
+
+  /**
+   * 
+   * Take initial readings (10 times), compute the mean of the 10 readings and return as one filtered datapoint
+   * 
+   * @param index Index of the color array (r=0, g=1, b=2)
+   * @return mean
+   */
+  private double initialReading(int index) {
+    for (int i = 0; i < 10; i++) {
+      // acquires sample data
+      lightColor.fetchSample(lightData, 0);
+      // place reading into corresponding place
+      std += lightData[index];
+    }
+    // take average of the standard
+    return std /= 100.0;
+  }
 }
