@@ -55,20 +55,20 @@ public class CanCalibrator {
   public int Calibrate() {
 
     // initialize array
-    double[] red_array = new double[100];
-    double[] green_array = new double[100];
-    double[] blue_array = new double[100];
+    double[] red_array = new double[50];
+    double[] green_array = new double[50];
+    double[] blue_array = new double[50];
 
     // take initial reading
-    // record the computed mean for 100 times for rgb
-    for (int i = 0; i < 100; i++) {
+    // record the computed mean for 50 times for rgb
+    for (int i = 0; i < 50; i++) {
       // each array contains 100 values
       red_array[i] = initialReading(RED_INDEX);
       green_array[i] = initialReading(GREEN_INDEX);
       blue_array[i] = initialReading(BLUE_INDEX);
     }
 
-    // compute to find mean of the 100 means
+    // compute to find mean of the 50 means
     // mean has only 3 values; r,g,b
     mean[RED_INDEX] = Find_Mean(red_array);
     mean[GREEN_INDEX] = Find_Mean(green_array);
@@ -97,20 +97,20 @@ public class CanCalibrator {
   public boolean Calibrate(double[] target) {
 
     // initialize array
-    double[] red_array = new double[100];
-    double[] green_array = new double[100];
-    double[] blue_array = new double[100];
+    double[] red_array = new double[50];
+    double[] green_array = new double[50];
+    double[] blue_array = new double[50];
 
     // take initial reading
     // record the computed mean for 100 times for rgb
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 50; i++) {
       // each array contains 100 values
       red_array[i] = initialReading(RED_INDEX);
       green_array[i] = initialReading(GREEN_INDEX);
       blue_array[i] = initialReading(BLUE_INDEX);
     }
 
-    // compute to find mean of the 100 means
+    // compute to find mean of the 50 means
     // mean has only 3 values; r,g,b
     mean[RED_INDEX] = Find_Mean(red_array);
     mean[GREEN_INDEX] = Find_Mean(green_array);
