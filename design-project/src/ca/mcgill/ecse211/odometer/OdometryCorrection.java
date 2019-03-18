@@ -180,6 +180,8 @@ public class OdometryCorrection implements Runnable {
         }
       }
       
+      rightcolor.fetchSample(rightlsData, 0);
+      rightcolorIntensity = rightlsData[0];
       if (rightcolorIntensity < 0.38) { // black lines reflect low intensity light
         Sound.beep();
         if(!leftline) {
