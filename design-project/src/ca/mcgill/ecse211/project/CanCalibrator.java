@@ -1,6 +1,7 @@
 package ca.mcgill.ecse211.project;
 
 import lejos.robotics.SampleProvider;
+
 import static ca.mcgill.ecse211.project.project.BLUE_COLOR;
 import static ca.mcgill.ecse211.project.project.YELLOW_COLOR;
 import static ca.mcgill.ecse211.project.project.GREEN_COLOR;
@@ -83,9 +84,6 @@ public class CanCalibrator {
     mean = Mean_Normalizer(mean[RED_INDEX], mean[GREEN_INDEX], mean[BLUE_INDEX]);
     standard_deviation = Mean_Normalizer(standard_deviation[RED_INDEX], standard_deviation[GREEN_INDEX], standard_deviation[BLUE_INDEX]);
     
-//    System.out.println("RED: " + mean[0]);
-//    System.out.println("GREEN: " + mean[1]);
-//    System.out.println("BLUE: " + mean[2]);
     // determine which color
     return isColor();
   }
@@ -127,6 +125,7 @@ public class CanCalibrator {
 
     // normalize the mean to a range of 0 - 1
     mean = Mean_Normalizer(mean[RED_INDEX], mean[GREEN_INDEX], mean[BLUE_INDEX]);
+
     // compare the read color value to the target threshold, also compare the stdev to eliminate false readings
     if (Compare_Standard_Deviation(target[RED_INDEX], standard_deviation[RED_INDEX],
         mean[RED_INDEX])
@@ -206,7 +205,7 @@ public class CanCalibrator {
    * @return boolean whether the color is considered "different"
    */
   private boolean Compare_Standard_Deviation(double target, double strd_dev, double mean) {
-    if (Math.abs(mean - target) < Math.abs(0.3 * strd_dev)) {
+    if (Math.abs(mean - target) < Math.abs(0.2 * strd_dev)) {
       return true;
     } else {
       return false;
@@ -219,38 +218,36 @@ public class CanCalibrator {
    * @return int color judged (R,G,B or Y)
    */
   private int isColor() {
-    if (Compare_Standard_Deviation(YELLOW_COLOR[RED_INDEX], standard_deviation[RED_INDEX],
-        mean[RED_INDEX])
-    	&& Compare_Standard_Deviation(YELLOW_COLOR[GREEN_INDEX], standard_deviation[GREEN_INDEX],
-            mean[GREEN_INDEX])
-        && Compare_Standard_Deviation(YELLOW_COLOR[BLUE_INDEX], standard_deviation[BLUE_INDEX],
-            mean[BLUE_INDEX])) {
-       return YELLOW_INDEX;
-    } else if(Compare_Standard_Deviation(BLUE_COLOR[RED_INDEX], standard_deviation[RED_INDEX],
-            mean[RED_INDEX])
-            && Compare_Standard_Deviation(BLUE_COLOR[GREEN_INDEX], standard_deviation[GREEN_INDEX],
-                mean[GREEN_INDEX])
-            && Compare_Standard_Deviation(BLUE_COLOR[BLUE_INDEX], standard_deviation[BLUE_INDEX],
-                mean[BLUE_INDEX])) {
-          return BLUE_INDEX;
-        } else if(Compare_Standard_Deviation(GREEN_COLOR[RED_INDEX], standard_deviation[RED_INDEX],
-        mean[RED_INDEX])
-        && Compare_Standard_Deviation(GREEN_COLOR[GREEN_INDEX], standard_deviation[GREEN_INDEX],
-            mean[GREEN_INDEX])
-        && Compare_Standard_Deviation(GREEN_COLOR[BLUE_INDEX], standard_deviation[BLUE_INDEX],
-            mean[BLUE_INDEX])){
-      return GREEN_INDEX;
-    } else if(Compare_Standard_Deviation(RED_COLOR[RED_INDEX], standard_deviation[RED_INDEX],
-            mean[RED_INDEX])
-            && Compare_Standard_Deviation(RED_COLOR[GREEN_INDEX], standard_deviation[GREEN_INDEX],
-                mean[GREEN_INDEX])
-            && Compare_Standard_Deviation(RED_COLOR[BLUE_INDEX], standard_deviation[BLUE_INDEX],
-                mean[BLUE_INDEX])) {
-          return RED_INDEX;
-    } else {
-      // other color
-      return -1;
+    if(mean[RED_INDEX] > 0.7) {
+      if (Compare_Standard_Deviation(YELLOW_COLOR[GREEN_INDEX], standard_deviation[GREEN_INDEX],
+              mean[GREEN_INDEX])
+          && Compare_Standard_Deviation(YELLOW_COLOR[BLUE_INDEX], standard_deviation[BLUE_INDEX],
+              mean[BLUE_INDEX])) {
+         return YELLOW_INDEX;
+      }else if(Compare_Standard_Deviation(RED_COLOR[GREEN_INDEX], standard_deviation[GREEN_INDEX],
+              mean[GREEN_INDEX])
+          && Compare_Standard_Deviation(RED_COLOR[BLUE_INDEX], standard_deviation[BLUE_INDEX],
+              mean[BLUE_INDEX])) {
+        return RED_INDEX;
+        }
     }
+  else if(mean[RED_INDEX] < 0.5) {
+    if(Compare_Standard_Deviation(BLUE_COLOR[BLUE_INDEX], standard_deviation[BLUE_INDEX],
+        mean[BLUE_INDEX])
+    && Compare_Standard_Deviation(BLUE_COLOR[BLUE_INDEX], standard_deviation[BLUE_INDEX],
+        mean[BLUE_INDEX])) {
+      return BLUE_INDEX;
+    }
+    else if(mean[BLUE_INDEX] > 0.5) {
+      return BLUE_INDEX;
+    }
+    else if(Compare_Standard_Deviation(GREEN_COLOR[GREEN_INDEX], standard_deviation[GREEN_INDEX],
+        mean[GREEN_INDEX])
+    && Compare_Standard_Deviation(GREEN_COLOR[GREEN_INDEX], standard_deviation[GREEN_INDEX],
+        mean[GREEN_INDEX])){
+      return GREEN_INDEX; }
+  }
+  return -1;
   }
 
   /**
@@ -261,7 +258,7 @@ public class CanCalibrator {
    * @return mean
    */
   private double initialReading(int index) {
-    for (int i = 0; i < 30; i++) {
+    for (int i = 0; i < 10; i++) {
       // acquires sample data
       lightColor.fetchSample(lightData, 0);
       // place reading into corresponding place
