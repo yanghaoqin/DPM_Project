@@ -61,7 +61,7 @@ public class ColorDetection extends Thread {
   }
 
   public void run() {
-
+	
     while (true) {
 
 
@@ -103,14 +103,16 @@ public class ColorDetection extends Thread {
    */
   public int rotateSensorDetect() {
     // Create a array of length 7
+	project.SENSOR_MOTOR.rotateTo(0);
     int[] colorResult = new int[21];
     for(int i = 0; i < colorResult.length; i++) {
       colorResult[i] = -1;
     }
 
     // Test 7 times
-    project.SENSOR_MOTOR.rotateTo(90);
+    project.SENSOR_MOTOR.rotateTo(80);
     for (int i = 0; i < 7; i++) {
+    	
       // Poll, process RGB, and classify
       colorResult[i] = calibrator.Calibrate();
       // Move Color sensor motor
@@ -138,7 +140,7 @@ public class ColorDetection extends Thread {
     
     project.LEFT_MOTOR.rotateTo(Navigation.convertDistance(project.WHEEL_RAD, 5), true);
     project.RIGHT_MOTOR.rotateTo(Navigation.convertDistance(project.WHEEL_RAD, 5), false);
-    project.SENSOR_MOTOR.rotateTo(160);
+    project.SENSOR_MOTOR.rotateTo(130);
     for (int i = 0; i < 7; i++) {
       // Poll, process RGB, and classify
       colorResult[i] = calibrator.Calibrate();
@@ -155,7 +157,7 @@ public class ColorDetection extends Thread {
     for (int i = 1; i < colorResult.length; i++) {
       if (colorResult[i] == prev && colorResult[i] != -1) {
         count++;
-        if (count > colorResult.length / 2 - 2) {
+        if (count > colorResult.length / 2 -2) {
           return colorResult[i]; // Find the majority value (being detected after enough times and
                                  // return that index)
         }
@@ -165,35 +167,35 @@ public class ColorDetection extends Thread {
       }
     }
 
-    project.LEFT_MOTOR.rotateTo(-Navigation.convertDistance(project.WHEEL_RAD, 10), true);
-    project.RIGHT_MOTOR.rotateTo(-Navigation.convertDistance(project.WHEEL_RAD, 10), false);
-    project.SENSOR_MOTOR.rotateTo(40);
-    for (int i = 0; i < 7; i++) {
-      // Poll, process RGB, and classify
-      colorResult[i] = calibrator.Calibrate();
-      // Move Color sensor motor
-    }
-    // Color sensor motor return to Original position
-    project.SENSOR_MOTOR.rotateTo(0, false);
-
-    Arrays.sort(colorResult);
-
-    // Below is the process of finding the majority of the legit elements (-1 values are excluded)
-    prev = colorResult[0];
-    count = 1;
-    for (int i = 1; i < colorResult.length; i++) {
-      if (colorResult[i] == prev && colorResult[i] != -1) {
-        count++;
-        if (count > colorResult.length / 2 - 3) {
-          return colorResult[i]; // Find the majority value (being detected after enough times and
-                                 // return that index)
-        }
-      } else {
-        count = 1;
-        prev = colorResult[i];
-      }
-    }
+    project.LEFT_MOTOR.rotateTo(-Navigation.convertDistance(project.WHEEL_RAD, 1), true);
+    project.RIGHT_MOTOR.rotateTo(-Navigation.convertDistance(project.WHEEL_RAD, 1), false);
     
+    for (int i = 0; i < 7; i++) {
+      // Poll, process RGB, and classify
+      colorResult[i] = calibrator.Calibrate();
+      // Move Color sensor motor
+    }
+    // Color sensor motor return to Original position
+    project.SENSOR_MOTOR.rotateTo(0, false);
+
+    Arrays.sort(colorResult);
+
+//    // Below is the process of finding the majority of the legit elements (-1 values are excluded)
+//    prev = colorResult[0];
+//    count = 1;
+//    for (int i = 1; i < colorResult.length; i++) {
+//      if (colorResult[i] == prev && colorResult[i] != -1) {
+//        count++;
+//        if (count > colorResult.length / 2 -3) {
+//          return colorResult[i]; // Find the majority value (being detected after enough times and
+//                                 // return that index)
+//        }
+//      } else {
+//        count = 1;
+//        prev = colorResult[i];
+//      }
+//    }
+//    
     return -1; // No majority or no legit values to return
   }
 

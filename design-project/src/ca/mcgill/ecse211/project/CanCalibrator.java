@@ -24,9 +24,9 @@ public class CanCalibrator {
   public static double[] standard_deviation = new double[3];
 
   // RGB indexes
-  private static final int RED_INDEX = 4;
-  private static final int GREEN_INDEX = 2;
-  private static final int BLUE_INDEX = 1;
+  private static final int RED_INDEX = 0;
+  private static final int GREEN_INDEX = 1;
+  private static final int BLUE_INDEX = 2;
   private static final int YELLOW_INDEX = 3;
 
 
@@ -55,13 +55,13 @@ public class CanCalibrator {
   public int Calibrate() {
 
     // initialize array
-    double[] red_array = new double[50];
-    double[] green_array = new double[50];
-    double[] blue_array = new double[50];
+    double[] red_array = new double[100];
+    double[] green_array = new double[100];
+    double[] blue_array = new double[100];
 
     // take initial reading
     // record the computed mean for 50 times for rgb
-    for (int i = 0; i < 50; i++) {
+    for (int i = 0; i < 100; i++) {
       // each array contains 100 values
       red_array[i] = initialReading(RED_INDEX);
       green_array[i] = initialReading(GREEN_INDEX);
@@ -81,7 +81,11 @@ public class CanCalibrator {
 
     // normalize the mean to a range of 0 - 1
     mean = Mean_Normalizer(mean[RED_INDEX], mean[GREEN_INDEX], mean[BLUE_INDEX]);
-
+    standard_deviation = Mean_Normalizer(standard_deviation[RED_INDEX], standard_deviation[GREEN_INDEX], standard_deviation[BLUE_INDEX]);
+    
+//    System.out.println("RED: " + mean[0]);
+//    System.out.println("GREEN: " + mean[1]);
+//    System.out.println("BLUE: " + mean[2]);
     // determine which color
     return isColor();
   }
@@ -97,13 +101,13 @@ public class CanCalibrator {
   public boolean Calibrate(double[] target) {
 
     // initialize array
-    double[] red_array = new double[50];
-    double[] green_array = new double[50];
-    double[] blue_array = new double[50];
+    double[] red_array = new double[100];
+    double[] green_array = new double[100];
+    double[] blue_array = new double[100];
 
     // take initial reading
     // record the computed mean for 100 times for rgb
-    for (int i = 0; i < 50; i++) {
+    for (int i = 0; i < 100; i++) {
       // each array contains 100 values
       red_array[i] = initialReading(RED_INDEX);
       green_array[i] = initialReading(GREEN_INDEX);
@@ -123,7 +127,6 @@ public class CanCalibrator {
 
     // normalize the mean to a range of 0 - 1
     mean = Mean_Normalizer(mean[RED_INDEX], mean[GREEN_INDEX], mean[BLUE_INDEX]);
-
     // compare the read color value to the target threshold, also compare the stdev to eliminate false readings
     if (Compare_Standard_Deviation(target[RED_INDEX], standard_deviation[RED_INDEX],
         mean[RED_INDEX])
@@ -203,7 +206,7 @@ public class CanCalibrator {
    * @return boolean whether the color is considered "different"
    */
   private boolean Compare_Standard_Deviation(double target, double strd_dev, double mean) {
-    if (Math.abs(mean - target) < Math.abs(mean - 2 * strd_dev)) {
+    if (Math.abs(mean - target) < Math.abs(0.3 * strd_dev)) {
       return true;
     } else {
       return false;
@@ -223,20 +226,20 @@ public class CanCalibrator {
         && Compare_Standard_Deviation(YELLOW_COLOR[BLUE_INDEX], standard_deviation[BLUE_INDEX],
             mean[BLUE_INDEX])) {
        return YELLOW_INDEX;
-    } else if(Compare_Standard_Deviation(GREEN_COLOR[RED_INDEX], standard_deviation[RED_INDEX],
+    } else if(Compare_Standard_Deviation(BLUE_COLOR[RED_INDEX], standard_deviation[RED_INDEX],
+            mean[RED_INDEX])
+            && Compare_Standard_Deviation(BLUE_COLOR[GREEN_INDEX], standard_deviation[GREEN_INDEX],
+                mean[GREEN_INDEX])
+            && Compare_Standard_Deviation(BLUE_COLOR[BLUE_INDEX], standard_deviation[BLUE_INDEX],
+                mean[BLUE_INDEX])) {
+          return BLUE_INDEX;
+        } else if(Compare_Standard_Deviation(GREEN_COLOR[RED_INDEX], standard_deviation[RED_INDEX],
         mean[RED_INDEX])
         && Compare_Standard_Deviation(GREEN_COLOR[GREEN_INDEX], standard_deviation[GREEN_INDEX],
             mean[GREEN_INDEX])
         && Compare_Standard_Deviation(GREEN_COLOR[BLUE_INDEX], standard_deviation[BLUE_INDEX],
             mean[BLUE_INDEX])){
       return GREEN_INDEX;
-    } else if(Compare_Standard_Deviation(BLUE_COLOR[RED_INDEX], standard_deviation[RED_INDEX],
-        mean[RED_INDEX])
-        && Compare_Standard_Deviation(BLUE_COLOR[GREEN_INDEX], standard_deviation[GREEN_INDEX],
-            mean[GREEN_INDEX])
-        && Compare_Standard_Deviation(BLUE_COLOR[BLUE_INDEX], standard_deviation[BLUE_INDEX],
-            mean[BLUE_INDEX])) {
-      return BLUE_INDEX;
     } else if(Compare_Standard_Deviation(RED_COLOR[RED_INDEX], standard_deviation[RED_INDEX],
             mean[RED_INDEX])
             && Compare_Standard_Deviation(RED_COLOR[GREEN_INDEX], standard_deviation[GREEN_INDEX],
@@ -258,7 +261,7 @@ public class CanCalibrator {
    * @return mean
    */
   private double initialReading(int index) {
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 30; i++) {
       // acquires sample data
       lightColor.fetchSample(lightData, 0);
       // place reading into corresponding place

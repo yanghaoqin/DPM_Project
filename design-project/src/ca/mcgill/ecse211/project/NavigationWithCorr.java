@@ -151,6 +151,7 @@ public class NavigationWithCorr extends Thread {
   private float[] RightcolorValue;
   private RegulatedMotor[] motorArrR= { RIGHT_MOTOR};
   private RegulatedMotor[] motorArrL= { LEFT_MOTOR};
+  private int correctionCounter = 0;
 
 
   // -----------------------------------------------------------------------------
@@ -247,10 +248,25 @@ public class NavigationWithCorr extends Thread {
 	    project.LEFT_MOTOR.setSpeed(200);
 	    project.RIGHT_MOTOR.setSpeed(200);
 
+	    if (correctionCounter %3  == 0){
+	    	LEFT_MOTOR.rotate(convertDistance(WHEEL_RAD, 7), true);
+		    project.LEFT_MOTOR.synchronizeWith(motorArrR);
+		    RIGHT_MOTOR.rotate(convertDistance(WHEEL_RAD, 7), false);
+		    
+		    project.LEFT_MOTOR.stop(true);
+	        project.RIGHT_MOTOR.stop(false);
 
+	        try {
+				Thread.sleep(250);
+			} catch (InterruptedException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 	    boolean counter_left = true;
 	    boolean counter_right = true;
 	    while (counter_left || counter_right) {
+	    	
+	        
 	      if(counter_left) {
 	        project.LEFT_MOTOR.forward();
 	        
@@ -260,6 +276,7 @@ public class NavigationWithCorr extends Thread {
 	        project.RIGHT_MOTOR.forward();
 	      
 	      }
+	      
 	       
 	      if(fetchSampleLeft() < 0.38 && counter_left) {
 	        project.LEFT_MOTOR.stop(true);
@@ -303,8 +320,7 @@ public class NavigationWithCorr extends Thread {
 	      }
 	    }
 	      
-//	    project.LEFT_MOTOR.stop(true);
-//        project.RIGHT_MOTOR.stop(false);
+
 	    caliOdoTheta();
 	    project.LEFT_MOTOR.stop(true);
         project.RIGHT_MOTOR.stop(false);
@@ -330,7 +346,7 @@ public class NavigationWithCorr extends Thread {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	    
+	    }
 
 	    // smooth acceleration so that wheels do not slip
 	    RIGHT_MOTOR.setAcceleration(SMOOTH_ACCELERATION);
@@ -339,11 +355,7 @@ public class NavigationWithCorr extends Thread {
 	    // sets both motors to forward speed
 	    RIGHT_MOTOR.setSpeed(FWDSPEED);
 	    LEFT_MOTOR.setSpeed(FWDSPEED);
-
-//	    if(Math.abs(x - odo.getXYT()[0]) <  THREASHOLD || Math.abs(y - odo.getXYT()[1]) < THREASHOLD){
-//	    	
-//	    }
-//	    
+    
 	    try {
 			Thread.sleep(500);
 		} catch (InterruptedException e) {
@@ -366,7 +378,7 @@ public class NavigationWithCorr extends Thread {
 	 			e.printStackTrace();
 	 		}
 
-	    
+	    correctionCounter++;
 	    isNavigating = false; // update navigation status
 	  }
   
@@ -520,7 +532,9 @@ public class NavigationWithCorr extends Thread {
 	 
   }
   
-  public void locaAtTunnel(){
+  public void locaAtTunnel(double x, double y){
+	  
+	  
 	  travelToLine();
 	  LEFT_MOTOR.rotate(-Navigation.convertDistance(project.WHEEL_RAD, DoubleLightLocalization.SENSOR_TOWHEEL), true);
 	  project.LEFT_MOTOR.synchronizeWith(motorArrR);
@@ -534,10 +548,8 @@ public class NavigationWithCorr extends Thread {
 	  RIGHT_MOTOR.rotate(-Navigation.convertDistance(project.WHEEL_RAD, DoubleLightLocalization.SENSOR_TOWHEEL), false);
 	  
 	  DoubleLightLocalization.reorientRobot(-Math.PI/2);
-	  odo.setXYT(3 * project.TILE, 7 * project.TILE, 0);
-	  System.out.println("x" + odo.getXYT()[0]);
-	  System.out.println("y" + odo.getXYT()[1]);
-	  System.out.println("T" + odo.getXYT()[2]);
+	  odo.setXYT(x * project.TILE, y * project.TILE, 0);
+	  
 	  
   }
   /**
@@ -545,6 +557,13 @@ public class NavigationWithCorr extends Thread {
    */
   private void travelToLine() {
 
+
+    LEFT_MOTOR.rotate(convertDistance(WHEEL_RAD, 10), true);
+    project.LEFT_MOTOR.synchronizeWith(motorArrR);
+    RIGHT_MOTOR.rotate(convertDistance(WHEEL_RAD, 10), false);
+    
+    project.LEFT_MOTOR.stop(true);
+    project.RIGHT_MOTOR.stop(false);
     project.LEFT_MOTOR.setAcceleration(6000);
     project.RIGHT_MOTOR.setAcceleration(6000);
     
@@ -552,6 +571,13 @@ public class NavigationWithCorr extends Thread {
     project.RIGHT_MOTOR.setSpeed(200);
 
 
+    try {
+		Thread.sleep(250);
+	} catch (InterruptedException e1) {
+		// TODO Auto-generated catch block
+		e1.printStackTrace();
+	}
+    
     boolean counter_left = true;
     boolean counter_right = true;
     while (counter_left || counter_right) {

@@ -80,7 +80,7 @@ public class DoubleLightLocalization {
   /**
    * Travel to the front until the 2 light sensors poll a black line
    */
-  private void travelToLine() {
+  public void travelToLine() {
 
     project.LEFT_MOTOR.setAcceleration(6000);
     project.RIGHT_MOTOR.setAcceleration(6000);

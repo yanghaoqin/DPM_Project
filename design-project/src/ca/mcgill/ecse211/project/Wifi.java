@@ -12,7 +12,7 @@ import lejos.hardware.Button;
  */
 public class Wifi {
 
-  private static final String SERVER_IP = "192.168.2.41"; //on the day of competition, must be "192.168.2.3"
+  private static final String SERVER_IP = "192.168.2.48"; //on the day of competition, must be "192.168.2.3"
   private static final int TEAM_NUMBER = 23; //our team number
   private static final boolean ENABLE_DEBUG_WIFI_PRINT = true;
   
@@ -91,8 +91,8 @@ public class Wifi {
       Island_UR_x = ((Long) data.get("Island_UR_x")).intValue();
       TNR_LL_y = ((Long) data.get("TNR_LL_y")).intValue();
       TNR_LL_x = ((Long) data.get("TNR_LL_x")).intValue();
-      TNR_UR_y = ((Long) data.get("Island_UR_y")).intValue();
-      TNR_UR_x = ((Long) data.get("Island_UR_x")).intValue();
+      TNR_UR_y = ((Long) data.get("TNR_UR_y")).intValue();
+      TNR_UR_x = ((Long) data.get("TNR_UR_x")).intValue();
       TNG_LL_y = ((Long) data.get("TNG_LL_y")).intValue();
       TNG_LL_x = ((Long) data.get("TNG_LL_x")).intValue();
       TNG_UR_y = ((Long) data.get("TNG_UR_y")).intValue();
