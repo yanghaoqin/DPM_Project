@@ -258,7 +258,7 @@ public class project {
     
     
        //TODO: WIFI ACQUISITION OF DATA
-      Wifi.main(args);
+   /*   Wifi.main(args);
       
       if (Wifi.RedTeam == 23) {
         corner = Wifi.RedCorner;
@@ -289,7 +289,7 @@ public class project {
         zone_LL_y = Wifi.SZG_LL_y;
         zone_UR_x = Wifi.SZG_UR_x;
         zone_UR_x = Wifi.SZG_UR_y;
-      }
+      }*/
     
       //TODO: LOCALIZATION
       (new Thread(odometer)).start();
@@ -316,12 +316,12 @@ public class project {
           odometer.setXYT(1 * TILE, 8 * TILE, 90);        
       } //theta might have to be changed if not the same reference system as in lab 5
       
-      boolean isTunV = isTunnelVertical();
+  //    boolean isTunV = isTunnelVertical();
       
       
      
-      NavigationWithCorr navWc = new NavigationWithCorr(odometer,left,right,leftcsData, rightcsData);
-      toTunnel(0, isTunV, navWc, dll, odometer);
+  //    NavigationWithCorr navWc = new NavigationWithCorr(odometer,left,right,leftcsData, rightcsData);
+  //    toTunnel(0, isTunV, navWc, dll, odometer);
       
       
       
@@ -424,14 +424,14 @@ public class project {
       Sound.beep();
       Sound.beep();
       Sound.beep();
-      Sound.beep(); //beeps 5 times (beta demo requirement)
+      Sound.beep(); //beeps 5 times (beta demo requirement)*/
       
       //TODO: START SEARCH THREAD (INSIDE SEARCH, WE WILL START CAN ID AND WEIGHING AND HANDLING AND WHEN SEARCH TERMINATES WE GET BACK HERE)
       Search search = new Search(odometer, usDistance, usData, lightColor, lightData, LCD);
       search.run();
       
       //TODO: BETA DEMO ONLY --> GO TO UPPER RIGHT CORNER
-      nav.travelTo(zone_UR_x, zone_UR_y); //goes to upper right corner
+   /*   nav.travelTo(zone_UR_x, zone_UR_y); //goes to upper right corner
       Sound.beep();
       Sound.beep();
       Sound.beep();
@@ -441,12 +441,12 @@ public class project {
      
     
       WeightID weight = new WeightID(left, leftcsData); //TODO: THIS WILL BE PLACED IN SEARCH ALGORITHM AFTERWARDS maybe?
-      weight.weight(); //TODO: COMMENT OUT FOR BETA DEMO
+      weight.weight(); //TODO: COMMENT OUT FOR BETA DEMO*/
       //TODO: GO BACK TO START (NAVIGATION)
       
       //TODO: DROP CAN (HANDLING)
       
-      //TODO: RESTART (WHILE LOOP?)*/
+      //TODO: RESTART (WHILE LOOP?)
      
 
      

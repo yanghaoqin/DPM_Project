@@ -12,7 +12,7 @@ import lejos.hardware.Button;
  */
 public class Wifi {
 
-  private static final String SERVER_IP = "192.168.2.48"; //on the day of competition, must be "192.168.2.3"
+  private static final String SERVER_IP = "192.168.2.52"; //on the day of competition, must be "192.168.2.3"
   private static final int TEAM_NUMBER = 23; //our team number
   private static final boolean ENABLE_DEBUG_WIFI_PRINT = true;
   
