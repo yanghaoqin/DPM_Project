@@ -97,9 +97,9 @@ public class Search extends Thread{
         System.out.println("URX: " + URX);   */
 
         Sound.beep();
-        while ((odo.getXYT()[1] < 4*TILE) //TODO: REPLACE HARDCODE BY WIFI CLASS VARIABLES
-            && (odo.getXYT()[1] >= 1*TILE) 
-            && (odo.getXYT()[0] < 4*TILE)) { //while still in search zone
+        while ((odo.getXYT()[1] < project.zone_UR_y*TILE) //TODO: REPLACE HARDCODE BY WIFI CLASS VARIABLES
+            && (odo.getXYT()[1] >= project.zone_LL_y*TILE) 
+            && (odo.getXYT()[0] < project.zone_LL_x*TILE)) { //while still in search zone
         //  Sound.beep();
           double distance = medianFilter();
           if (distance < CAN) { //can is detected
@@ -212,7 +212,7 @@ public class Search extends Thread{
         }
         Sound.buzz();
         //this while loop is exited when robot not in search zone anymore
-        if (odo.getXYT()[0] <= 4*TILE) { //robot still in search zone --> we need to make it change direction
+        if (odo.getXYT()[0] <= project.zone_LL_x*TILE) { //robot still in search zone --> we need to make it change direction
           Sound.beep();
           LEFT_MOTOR.stop(true);
           RIGHT_MOTOR.stop(); 
@@ -264,7 +264,7 @@ public class Search extends Thread{
           e.printStackTrace();
         }*/
         }
-        else if (odo.getXYT()[0] > 4*TILE) { //robot reached rLimit. technically should not happen since the robot should not have to go through whole search zone without finding a can
+        else if (odo.getXYT()[0] > project.zone_LL_x*TILE) { //robot reached rLimit. technically should not happen since the robot should not have to go through whole search zone without finding a can
           LEFT_MOTOR.stop(true);
           RIGHT_MOTOR.stop(); 
           motorSweep.stopSensor(); //motor stops sweeping

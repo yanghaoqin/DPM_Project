@@ -258,7 +258,7 @@ public class project {
     
     
        //TODO: WIFI ACQUISITION OF DATA
-   /*   Wifi.main(args);
+      Wifi.main(args);
       
       if (Wifi.RedTeam == 23) {
         corner = Wifi.RedCorner;
@@ -273,7 +273,7 @@ public class project {
         zone_LL_x = Wifi.SZR_LL_x;
         zone_LL_y = Wifi.SZR_LL_y;
         zone_UR_x = Wifi.SZR_UR_x;
-        zone_UR_x = Wifi.SZR_UR_y;
+        zone_UR_y = Wifi.SZR_UR_y;
       }
       else if (Wifi.GreenTeam == 23) {
         corner = Wifi.GreenCorner;
@@ -288,16 +288,16 @@ public class project {
         zone_LL_x = Wifi.SZG_LL_x;
         zone_LL_y = Wifi.SZG_LL_y;
         zone_UR_x = Wifi.SZG_UR_x;
-        zone_UR_x = Wifi.SZG_UR_y;
-      }*/
+        zone_UR_y = Wifi.SZG_UR_y;
+      }
     
       //TODO: LOCALIZATION
       (new Thread(odometer)).start();
       (new Thread(display)).start();
-//      USLocalizer ul = new USLocalizer(odometer, LEFT_MOTOR, RIGHT_MOTOR, buttonChoice, usDistance);
-//      ul.localize();
+      USLocalizer ul = new USLocalizer(odometer, LEFT_MOTOR, RIGHT_MOTOR, buttonChoice, usDistance);
+//      ul.localize(); TODO: DO WE EVEN NEED THIS???
         DoubleLightLocalization dll = new DoubleLightLocalization(odometer,left, right, leftcsData, rightcsData);
-//      dll.DoubleLocalizer();
+      dll.DoubleLocalizer();
       
       Sound.beep(); //to signal robot in place (beta demo requirement)
       
