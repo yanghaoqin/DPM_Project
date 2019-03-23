@@ -9,6 +9,7 @@ import ca.mcgill.ecse211.project.CanCalibrator;
 import ca.mcgill.ecse211.project.ColorDetection;
 import static ca.mcgill.ecse211.project.project.LEFT_MOTOR;
 import static ca.mcgill.ecse211.project.project.RIGHT_MOTOR;
+import static ca.mcgill.ecse211.project.project.SENSOR_MOTOR;
 import ca.mcgill.ecse211.odometer.Odometer;
 import ca.mcgill.ecse211.odometer.OdometerExceptions;
 import lejos.hardware.Button;
@@ -330,7 +331,7 @@ public class project {
       Sound.beep();
       Sound.beep(); //beeps 5 times (beta demo requirement)
       
-      //START SEARCH THREAD (INSIDE SEARCH, WE WILL START CAN ID AND WEIGHING AND HANDLING AND WHEN SEARCH TERMINATES WE GET BACK HERE)
+      //START SEARCH THREAD (INSIDE SEARCH, WE WILL START CAN ID AND WEIGHING AND WHEN SEARCH TERMINATES WE GET BACK HERE)
       Search search = new Search(odometer, usDistance, usData, lightColor, lightData, LCD);
       search.run();
       
@@ -346,6 +347,11 @@ public class project {
     
       WeightID weight = new WeightID(left, leftcsData); //TODO: THIS WILL BE PLACED IN SEARCH ALGORITHM AFTERWARDS maybe?
       weight.weight(); //TODO: COMMENT OUT FOR BETA DEMO
+      
+      //RETRIEVE CAN
+      Handling handling = new Handling(odometer);
+      Thread handlingThread = new Thread(handling);   
+      handlingThread.start();
       
       //GO BACK TO START (NAVIGATION)
       switch (corner) { //navigates to the middle of the starting corner tile
@@ -363,6 +369,8 @@ public class project {
       } //now robot is back at its starting corner
       
       //TODO: DROP CAN (HANDLING)
+      handlingThread.stop();
+      handling.dispose();
       
       //TODO: RESTART (WHILE LOOP?)
      

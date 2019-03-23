@@ -86,17 +86,7 @@ public class Search extends Thread{
       isForward = true;
       
       while (true) { //loop for whole search
-      /*  double URY = project.zone_UR_y * TILE;
-        double LLY = project.zone_LL_y * TILE;
-        double URX = project.zone_UR_x * TILE;*/
-
-      /*  System.out.println("Y: " + Y);   
-        System.out.println("X: " + X);   
-        System.out.println("URY: " + URY);   
-        System.out.println("LLY: " + LLY);   
-        System.out.println("URX: " + URX);   */
-
-        while ((odo.getXYT()[1] < project.zone_UR_y*TILE) //TODO: REPLACE HARDCODE BY WIFI CLASS VARIABLES
+        while ((odo.getXYT()[1] < project.zone_UR_y*TILE)
             && (odo.getXYT()[1] >= project.zone_LL_y*TILE) 
             && (odo.getXYT()[0] < project.zone_LL_x*TILE)) { //while still in search zone
           double distance = medianFilter();
@@ -142,7 +132,7 @@ public class Search extends Thread{
                   lcd.drawString("Blue Can", 0, 1);
                 } else if (colorIndex == 3) {
                   lcd.drawString("Yellow Can", 0, 1);
-                }//TODO: YUNHAO, PLS MODIFY THE COLOUR CODE
+                }
                 
                 if (colorIndex == 1) { //only fr beta demo //TODO: FIX HARDCODE
                   Sound.beep();
@@ -154,23 +144,7 @@ public class Search extends Thread{
                   Sound.beep();
                   Sound.beep();
                   Sound.beep();
-                  Sound.beep();
-                  //for beta demo, we must get away from can so:
-                  LEFT_MOTOR.setSpeed(SPEED);
-                  RIGHT_MOTOR.setSpeed(SPEED);
-                  LEFT_MOTOR.backward();
-                  RIGHT_MOTOR.backward(); //now robot moving away from can
-                  
-                  while (true) {
-                    distance = medianFilter();
-                    if (distance >= CAN_CLOSE) { 
-                      LEFT_MOTOR.stop(true);
-                      RIGHT_MOTOR.stop(); //robot stops when can detected
-                      LEFT_MOTOR.rotate(-convertAngle(project.WHEEL_RAD, project.TRACK, angle), true);
-                      RIGHT_MOTOR.rotate(convertAngle(project.WHEEL_RAD, project.TRACK, angle), false);
-                      break; //at this point robot should be far enough from can to be able to travel to upper right corner of search
-                    }
-                  }
+                  Sound.beep();                  
                   return; //exit search class, return to project class
                 } //we found the right can
                 else { //not the right can
