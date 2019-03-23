@@ -290,8 +290,33 @@ public class project {
 
       //TODO: READCH LOWER LEFT OF TUNNEL (NAVIGATION)
       int tunnelLength = 0;
-      boolean isVert; //true if tunnel vertical, false is tunnel horizontal
       
+      if ((tunnel_UR_x - tunnel_LL_x) < (tunnel_UR_y - tunnel_LL_y)) { //tunnel is vertical        
+        tunnelLength = tunnel_UR_y - tunnel_LL_y + 1; //+1 to take into account half a tile before and after the tunnel
+        if ((corner == 0) || (corner == 1)) {
+          //we enter the tunnel by LL corner side
+          nav.travelTo(tunnel_LL_x + 0.5, tunnel_LL_y - 0.5);
+          nav.turnTo(0);
+        }
+        else { //corner is 2 or 3
+          //we enter the tunnel by UR corner side
+          nav.travelTo(tunnel_UR_x - 0.5, tunnel_UR_y + 0.5);
+          nav.turnTo(180);
+        }
+      }
+      else { //tunnel is horizontal
+        tunnelLength = tunnel_UR_x - tunnel_LL_x + 1;
+        if ((corner == 0) || (corner == 3)) {
+          //we enter tunnel by LL corner side
+          nav.travelTo(tunnel_LL_x - 0.5, tunnel_LL_y + 0.5);
+          nav.turnTo(90);
+        }
+        else { //corner is 1 or 2
+          //we enter tunnel by UR corner side
+          nav.travelTo(tunnel_UR_x + 0.5, tunnel_UR_y - 0.5);
+          nav.turnTo(270);
+        }
+      }      
       
       //MAKE IT GO THROUGH TUNNEL (NAVIGATION)
       RIGHT_MOTOR.rotate(Navigation.convertDistance(WHEEL_RAD, tunnelLength*TILE), true);
