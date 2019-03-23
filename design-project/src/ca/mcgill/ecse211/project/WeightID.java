@@ -45,12 +45,10 @@ public class WeightID {
 		  project.LEFT_MOTOR.forward();
 		  project.RIGHT_MOTOR.forward();
 		  if(fetchSampleLeft() < 0.38 && !first) {
-		    Sound.beep();
 		    first = true;
 		    start = System.currentTimeMillis();
 		  }
 		  if(fetchSampleLeft() < 0.38 && first) {
-		    Sound.beep();
 		    end = System.currentTimeMillis();
 		    stop = true;
 		  }
@@ -60,7 +58,6 @@ public class WeightID {
 
         System.out.println(end - start);
 		if(end - start > threashold){
-		  Sound.buzz();
 		  return true;
 			
 		}

@@ -80,7 +80,6 @@ public class LightLocalizer {
 			if (sample < 0.38) {
 				lineData[index] = odometer.getXYT()[2];
 				index++;
-				Sound.beep();
 			}
 		}
 
@@ -112,7 +111,6 @@ public class LightLocalizer {
 
 		// if we are not facing 0.0 then turn ourselves so that we are	
 		if (odometer.getXYT()[2] <= 350 && odometer.getXYT()[2] >= 10.0) {
-			Sound.beep();
 			leftMotor.setSpeed(ROTATION_SPEED / 2);
 			rightMotor.setSpeed(ROTATION_SPEED / 2);
 
@@ -146,7 +144,6 @@ public class LightLocalizer {
 		}
 		leftMotor.stop(true);
 		rightMotor.stop();
-		Sound.beep();
 
 		// Move backwards so our origin is close to origin
 		leftMotor.rotate(convertDistance(project.WHEEL_RAD, -SENSOR_LENGTH-6), true);

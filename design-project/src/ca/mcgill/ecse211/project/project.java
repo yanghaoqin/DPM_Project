@@ -9,6 +9,7 @@ import ca.mcgill.ecse211.project.CanCalibrator;
 import ca.mcgill.ecse211.project.ColorDetection;
 import static ca.mcgill.ecse211.project.project.LEFT_MOTOR;
 import static ca.mcgill.ecse211.project.project.RIGHT_MOTOR;
+import static ca.mcgill.ecse211.project.project.SENSOR_MOTOR;
 import ca.mcgill.ecse211.odometer.Odometer;
 import ca.mcgill.ecse211.odometer.OdometerExceptions;
 import lejos.hardware.Button;
@@ -220,7 +221,7 @@ public class project {
 
       //TODO: WIFI ACQUISITION OF DATA
    Wifi.main(args);
-      
+
       if (Wifi.RedTeam == 23) {
         corner = Wifi.RedCorner;
         team_LL_x = Wifi.Red_LL_x;
@@ -234,7 +235,7 @@ public class project {
         zone_LL_x = Wifi.SZR_LL_x;
         zone_LL_y = Wifi.SZR_LL_y;
         zone_UR_x = Wifi.SZR_UR_x;
-        zone_UR_x = Wifi.SZR_UR_y;
+        zone_UR_y = Wifi.SZR_UR_y;
       }
       else if (Wifi.GreenTeam == 23) {
         corner = Wifi.GreenCorner;
@@ -249,19 +250,20 @@ public class project {
         zone_LL_x = Wifi.SZG_LL_x;
         zone_LL_y = Wifi.SZG_LL_y;
         zone_UR_x = Wifi.SZG_UR_x;
-        zone_UR_x = Wifi.SZG_UR_y;
+
+        zone_UR_y = Wifi.SZG_UR_y;
+
       }
     
-      //TODO: LOCALIZATION
+      //LOCALIZATION
       (new Thread(odometer)).start();
       (new Thread(display)).start();
       USLocalizer ul = new USLocalizer(odometer, LEFT_MOTOR, RIGHT_MOTOR, buttonChoice, usDistance);
+
       ul.localize();
       DoubleLightLocalization dll = new DoubleLightLocalization(odometer,left, right, leftcsData, rightcsData);
       dll.DoubleLocalizer();
-      
-      Button.waitForAnyPress();
-      
+
       Sound.beep(); //to signal robot in place (beta demo requirement)
       
       //now that the robot is at the gridline, update odometer based on corner number
@@ -278,75 +280,100 @@ public class project {
         case 3:
           odometer.setXYT(1 * TILE, 8 * TILE, 90);        
       } //theta might have to be changed if not the same reference system as in lab 5
+      
+      Navigation nav = new Navigation(odometer);
 
-      //TODO: START SEARCH THREAD (INSIDE SEARCH, WE WILL START CAN ID AND WEIGHING AND HANDLING AND WHEN SEARCH TERMINATES WE GET BACK HERE)
+      //TODO: READCH LOWER LEFT OF TUNNEL (NAVIGATION)
+      int tunnelLength = 0;
+      
+      if ((tunnel_UR_x - tunnel_LL_x) < (tunnel_UR_y - tunnel_LL_y)) { //tunnel is vertical        
+        tunnelLength = tunnel_UR_y - tunnel_LL_y + 1; //+1 to take into account half a tile before and after the tunnel
+        if ((corner == 0) || (corner == 1)) {
+          //we enter the tunnel by LL corner side
+          nav.travelTo(tunnel_LL_x + 0.5, tunnel_LL_y - 0.5);
+          nav.turnTo(0);
+        }
+        else { //corner is 2 or 3
+          //we enter the tunnel by UR corner side
+          nav.travelTo(tunnel_UR_x - 0.5, tunnel_UR_y + 0.5);
+          nav.turnTo(180);
+        }
+      }
+      else { //tunnel is horizontal
+        tunnelLength = tunnel_UR_x - tunnel_LL_x + 1;
+        if ((corner == 0) || (corner == 3)) {
+          //we enter tunnel by LL corner side
+          nav.travelTo(tunnel_LL_x - 0.5, tunnel_LL_y + 0.5);
+          nav.turnTo(90);
+        }
+        else { //corner is 1 or 2
+          //we enter tunnel by UR corner side
+          nav.travelTo(tunnel_UR_x + 0.5, tunnel_UR_y - 0.5);
+          nav.turnTo(270);
+        }
+      }      
+      
+      //MAKE IT GO THROUGH TUNNEL (NAVIGATION)
+      RIGHT_MOTOR.rotate(Navigation.convertDistance(WHEEL_RAD, tunnelLength*TILE), true);
+      LEFT_MOTOR.rotate(Navigation.convertDistance(WHEEL_RAD, tunnelLength*TILE), false);
+      
+      //REACH SEARCH ZONE (NAVIGATION) AT LOWER LEFT CORNER
+      nav.travelTo(zone_LL_x, zone_LL_y);
+      Sound.beep();
+      Sound.beep();
+      Sound.beep();
+      Sound.beep();
+      Sound.beep(); //beeps 5 times (beta demo requirement)
+      
+      //START SEARCH THREAD (INSIDE SEARCH, WE WILL START CAN ID AND WEIGHING AND WHEN SEARCH TERMINATES WE GET BACK HERE)
       Search search = new Search(odometer, usDistance, usData, lightColor, lightData, LCD);
       search.run();
+      
+      //BETA DEMO ONLY --> GO TO UPPER RIGHT CORNER
+      nav.travelTo(zone_UR_x, zone_UR_y); //goes to upper right corner
+      Sound.beep();
+      Sound.beep();
+      Sound.beep();
+      Sound.beep();
+      Sound.beep(); //beep 5 times (beta demo requirement)
+      //end of beta demo
+     
+    
+      WeightID weight = new WeightID(left, leftcsData); //TODO: THIS WILL BE PLACED IN SEARCH ALGORITHM AFTERWARDS maybe?
+      weight.weight(); //TODO: COMMENT OUT FOR BETA DEMO
+      
+      //RETRIEVE CAN
+      Handling handling = new Handling(odometer);
+      Thread handlingThread = new Thread(handling);   
+      handlingThread.start();
+      
+      //GO BACK TO START (NAVIGATION)
+      switch (corner) { //navigates to the middle of the starting corner tile
+        case 0: 
+          nav.travelTo(0.5, 0.5);   
+          break;
+        case 1:
+          nav.travelTo(14.5, 0.5);
+          break;
+        case 2:
+          nav.travelTo(14.5, 8.5);
+          break;
+        case 3:
+          nav.travelTo(0.5, 8.5);
+      } //now robot is back at its starting corner
+      
+      //TODO: DROP CAN (HANDLING)
+      handlingThread.stop();
+      handling.dispose();
+      
+      //TODO: RESTART (WHILE LOOP?)
+
      
       // exit when esc pressed
       while (Button.waitForAnyPress() != Button.ID_ESCAPE) {
       }
       System.exit(0); // exit program after esc pressed
-    }
-  
-  public static void toTunnel(int caseFlag, boolean isTV, NavigationWithCorr navWc ,DoubleLightLocalization dll , Odometer odo){ //There should be 4 cases. This version is only case 0
-	  if (isTV){
-		  navWc.navigateTo(1, 1, tunnel_LL_x, tunnel_LL_y - 1);
-		  turnToZero(odo);
-		  
-		  navWc.locaAtTunnel(tunnel_LL_x, tunnel_LL_y - 1);
-		  DoubleLightLocalization.reorientRobot(Math.PI/2);
-		  RIGHT_MOTOR.rotate(Navigation.convertDistance(WHEEL_RAD, 0.5 * TILE), true);
-		  LEFT_MOTOR.rotate(Navigation.convertDistance(WHEEL_RAD, 0.5 * TILE), false);
-		  
-		  DoubleLightLocalization.reorientRobot(-Math.PI/2);
-		  RIGHT_MOTOR.rotate(Navigation.convertDistance(WHEEL_RAD, 4 * TILE), true); // Going through!!
-		  LEFT_MOTOR.rotate(Navigation.convertDistance(WHEEL_RAD, 4 * TILE), false);
-		  
-		  navWc.locaAtTunnel(tunnel_UR_x, tunnel_UR_y + 1);
-		   
-		  navWc.navigateTo(tunnel_UR_x , tunnel_UR_y + 1,zone_LL_x, zone_LL_y);
-		
-		  
-		  
-		  
-	  }else{
-		  navWc.navigateTo(1, 1, tunnel_LL_x - 1, tunnel_LL_y);
-		  navWc.locaAtTunnel(tunnel_LL_x - 1, tunnel_LL_y);
-		  RIGHT_MOTOR.rotate(Navigation.convertDistance(WHEEL_RAD, 0.5 * TILE), true);
-		  LEFT_MOTOR.rotate(Navigation.convertDistance(WHEEL_RAD, 0.5 * TILE), false);
-		  
-		  
-		  DoubleLightLocalization.reorientRobot(Math.PI/2);
-		  RIGHT_MOTOR.rotate(Navigation.convertDistance(WHEEL_RAD, 4 * TILE), true);
-		  LEFT_MOTOR.rotate(Navigation.convertDistance(WHEEL_RAD, 4 * TILE), false);
-		  
-		  DoubleLightLocalization.reorientRobot(-Math.PI/2);
-		  navWc.locaAtTunnel(tunnel_UR_x + 1, tunnel_UR_y );
-		  navWc.navigateTo(tunnel_UR_x + 1, tunnel_UR_y, zone_LL_x, zone_LL_y);
-			
-		  
-	  }
-  }
-  
-  public static boolean isTunnelVertical(){
-	  if (Math.abs(tunnel_UR_x - tunnel_LL_x) == 2){
-		  return false;
-	  }else if (Math.abs(tunnel_UR_x - tunnel_LL_x) == 1){
-		  return true;
-	  }
-	  else{
-		  Button.waitForAnyPress();
-		  return false;
-		 
-	  }
-  }
-  public static void turnToZero(Odometer Odo){
-	  double theta = Odo.getXYT()[2];
-	  if (theta > 10){
-	    LEFT_MOTOR.rotate(-Navigation.convertAngle(project.WHEEL_RAD, project.TRACK, theta), true);
-	    RIGHT_MOTOR.rotate(Navigation.convertAngle(project.WHEEL_RAD, project.TRACK, theta), false);
-	  }
-  }
+    }  
+ 
   }
 

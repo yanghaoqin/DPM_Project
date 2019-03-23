@@ -105,7 +105,6 @@ public class DoubleLightLocalization {
       if(fetchSampleLeft() < 0.38 && counter_left) {
         project.LEFT_MOTOR.stop(true);
         project.RIGHT_MOTOR.stop();
-        Sound.beep();
         counter_left = false;
         try {
           Thread.sleep(200);
@@ -126,7 +125,6 @@ public class DoubleLightLocalization {
       if(fetchSampleRight() < 0.38 && counter_right) {
         project.RIGHT_MOTOR.stop(true);
         project.LEFT_MOTOR.stop();
-        Sound.buzz();
         counter_right = false;
         try {
           Thread.sleep(200);

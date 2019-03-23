@@ -67,7 +67,6 @@ public class ColorDetection extends Thread {
 
       if (isCan()) {
         lcd.drawString("Object Detected!!!", 0, 0);
-        Sound.beep();
 
         colorIndex = rotateSensorDetect();
         if (colorIndex == 0) {
