@@ -96,11 +96,9 @@ public class Search extends Thread{
         System.out.println("LLY: " + LLY);   
         System.out.println("URX: " + URX);   */
 
-        Sound.beep();
         while ((odo.getXYT()[1] < project.zone_UR_y*TILE) //TODO: REPLACE HARDCODE BY WIFI CLASS VARIABLES
             && (odo.getXYT()[1] >= project.zone_LL_y*TILE) 
             && (odo.getXYT()[0] < project.zone_LL_x*TILE)) { //while still in search zone
-        //  Sound.beep();
           double distance = medianFilter();
           if (distance < CAN) { //can is detected
             motorSweep.stopSensor(); //motor stops sweeping
@@ -210,10 +208,8 @@ public class Search extends Thread{
           }
 
         }
-        Sound.buzz();
         //this while loop is exited when robot not in search zone anymore
         if (odo.getXYT()[0] <= project.zone_LL_x*TILE) { //robot still in search zone --> we need to make it change direction
-          Sound.beep();
           LEFT_MOTOR.stop(true);
           RIGHT_MOTOR.stop(); 
           

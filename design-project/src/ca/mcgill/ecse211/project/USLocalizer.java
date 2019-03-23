@@ -85,7 +85,6 @@ public class USLocalizer {
 			leftMotor.backward();
 			rightMotor.forward();
 		}
-		Sound.buzz();
 		// record angle
 		angleA = odometer.getXYT()[2];
 
@@ -100,7 +99,6 @@ public class USLocalizer {
 			leftMotor.forward();
 			rightMotor.backward();
 		}
-		Sound.buzz();
 		angleB = odometer.getXYT()[2];
 
 		leftMotor.stop(true);
@@ -146,8 +144,6 @@ public class USLocalizer {
 		}
 		// record angle
 		angleA = odometer.getXYT()[2];
-		Sound.buzz();
-
 		// rotate out of the wall range
 		while (fetchUS() < distance + tolerance) {
 			leftMotor.forward();
@@ -160,7 +156,6 @@ public class USLocalizer {
 			rightMotor.backward();
 		}
 		angleB = odometer.getXYT()[2];
-		Sound.buzz();
 
 		leftMotor.stop(true);
 		rightMotor.stop();

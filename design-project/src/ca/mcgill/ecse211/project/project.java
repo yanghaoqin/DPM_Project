@@ -219,45 +219,15 @@ public class project {
 
 
     Display display = new Display(LCD);
-//    isColorDetection = true;
-//    (new Thread(display)).start();
-//    ColorDetection cd = new ColorDetection ( usDistance,  usData,  lightColor,
-//    	      lightData, LCD);
-//    
-//        while(buttonChoice != Button.ID_ESCAPE){
-//        		
-//        	//cd.calibrator.Calibrate();
-//        		int index = cd.rotateSensorDetect();
-//        		
-//                System.out.println("color index " + index );
-//        	Button.waitForAnyPress();
-//              
-//        }
+
       // exit system after esc pressed
       // clear display
-//      LCD.clear();  
-      //at this point our robot will be on the closest gridline
+      LCD.clear();  
 
     
+      //START OF RUN
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-       //TODO: WIFI ACQUISITION OF DATA
+      //WIFI ACQUISITION OF DATA
       Wifi.main(args);
       
       if (Wifi.RedTeam == 23) {
@@ -291,11 +261,11 @@ public class project {
         zone_UR_y = Wifi.SZG_UR_y;
       }
     
-      //TODO: LOCALIZATION
+      //LOCALIZATION
       (new Thread(odometer)).start();
       (new Thread(display)).start();
       USLocalizer ul = new USLocalizer(odometer, LEFT_MOTOR, RIGHT_MOTOR, buttonChoice, usDistance);
-//      ul.localize(); TODO: DO WE EVEN NEED THIS???
+//      ul.localize(); TODO: DO WE EVEN NEED THIS?
         DoubleLightLocalization dll = new DoubleLightLocalization(odometer,left, right, leftcsData, rightcsData);
       dll.DoubleLocalizer();
       
@@ -316,122 +286,31 @@ public class project {
           odometer.setXYT(1 * TILE, 8 * TILE, 90);        
       } //theta might have to be changed if not the same reference system as in lab 5
       
-  //    boolean isTunV = isTunnelVertical();
-      
-      
-     
-  //    NavigationWithCorr navWc = new NavigationWithCorr(odometer,left,right,leftcsData, rightcsData);
-  //    toTunnel(0, isTunV, navWc, dll, odometer);
-      
-      
-      
-     
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-//      nav.turnTo(90);
-//      while(true) {
-//        System.out.println(odometer.getXYT()[0]);
-//        LEFT_MOTOR.forward();
-//        RIGHT_MOTOR.forward();
-//        if (odometer.getXYT()[0] == 3) {
-//          break;
-//        }
-//      }
-//      LightLocalizer ll = new LightLocalizer(odometer, LEFT_MOTOR, RIGHT_MOTOR, Right_Sensor, null);
+      Navigation nav = new Navigation(odometer);
+
       //TODO: READCH LOWER LEFT OF TUNNEL (NAVIGATION)
-   // nav.travelTo(zone_LL_x, tunnel_LL_y);
-//      int tunnelLength;
-//   //   if ((tunnel_LL_x < tunnel_UR_x) && (tunnel_LL_y < tunnel_UR_y)) {
-//      if ((tunnel_UR_x - tunnel_LL_x) < (tunnel_UR_y - tunnel_LL_y)) { //vertical
-//        nav.travelTo(tunnel_LL_x + 0.5, tunnel_LL_y - 0.5);
-//      //  nav.turnTo(0); //TODO: MIGHT NEED TO FIX TURNTO
-//        ll.turnTo(0*TO_RAD);       
-//      
-//        tunnelLength = tunnel_UR_y - tunnel_LL_y + 1; //+1 to account for half tile before and after
-   //   } //turn at 0 based on orientation of tunnel
-    /*  else if ((tunnel_LL_x > tunnel_UR_x) && (tunnel_LL_y < tunnel_UR_y)) {
-        nav.travelTo(tunnel_LL_x + 0.5, tunnel_LL_y + 0.5);
-        nav.turnTo(270);
-        tunnelLength = tunnel_LL_x - tunnel_UR_x + 1;
-      }
-      else if ((tunnel_LL_x > tunnel_UR_x) && (tunnel_LL_y > tunnel_UR_y)) {
-        nav.travelTo(tunnel_LL_x - 0.5, tunnel_LL_y + 0.5);
-        nav.turnTo(180);
-        tunnelLength = tunnel_LL_y - tunnel_UR_y + 1;
-      }*/
-//      else { //horizontal
-//        nav.travelTo(tunnel_LL_x - 0.5, tunnel_LL_y + 0.5);
-//       ll.turnTo(90*TO_RAD);
-//        tunnelLength = tunnel_UR_x - tunnel_LL_x + 1;
-//      }
-   /*
-      //TODO: MAKE IT GO THROUGH TUNNEL (NAVIGATION)
+      int tunnelLength = 0;
+      boolean isVert; //true if tunnel vertical, false is tunnel horizontal
+      
+      
+      //MAKE IT GO THROUGH TUNNEL (NAVIGATION)
       RIGHT_MOTOR.rotate(Navigation.convertDistance(WHEEL_RAD, tunnelLength*TILE), true);
       LEFT_MOTOR.rotate(Navigation.convertDistance(WHEEL_RAD, tunnelLength*TILE), false);
       
-      //TODO: REACH SEARCH ZONE (NAVIGATION) AT LOWER LEFT CORNER
+      //REACH SEARCH ZONE (NAVIGATION) AT LOWER LEFT CORNER
       nav.travelTo(zone_LL_x, zone_LL_y);
       Sound.beep();
       Sound.beep();
       Sound.beep();
       Sound.beep();
-      Sound.beep(); //beeps 5 times (beta demo requirement)*/
+      Sound.beep(); //beeps 5 times (beta demo requirement)
       
-      //TODO: START SEARCH THREAD (INSIDE SEARCH, WE WILL START CAN ID AND WEIGHING AND HANDLING AND WHEN SEARCH TERMINATES WE GET BACK HERE)
+      //START SEARCH THREAD (INSIDE SEARCH, WE WILL START CAN ID AND WEIGHING AND HANDLING AND WHEN SEARCH TERMINATES WE GET BACK HERE)
       Search search = new Search(odometer, usDistance, usData, lightColor, lightData, LCD);
       search.run();
       
-      //TODO: BETA DEMO ONLY --> GO TO UPPER RIGHT CORNER
-   /*   nav.travelTo(zone_UR_x, zone_UR_y); //goes to upper right corner
+      //BETA DEMO ONLY --> GO TO UPPER RIGHT CORNER
+      nav.travelTo(zone_UR_x, zone_UR_y); //goes to upper right corner
       Sound.beep();
       Sound.beep();
       Sound.beep();
@@ -441,8 +320,22 @@ public class project {
      
     
       WeightID weight = new WeightID(left, leftcsData); //TODO: THIS WILL BE PLACED IN SEARCH ALGORITHM AFTERWARDS maybe?
-      weight.weight(); //TODO: COMMENT OUT FOR BETA DEMO*/
-      //TODO: GO BACK TO START (NAVIGATION)
+      weight.weight(); //TODO: COMMENT OUT FOR BETA DEMO
+      
+      //GO BACK TO START (NAVIGATION)
+      switch (corner) { //navigates to the middle of the starting corner tile
+        case 0: 
+          nav.travelTo(0.5, 0.5);   
+          break;
+        case 1:
+          nav.travelTo(14.5, 0.5);
+          break;
+        case 2:
+          nav.travelTo(14.5, 8.5);
+          break;
+        case 3:
+          nav.travelTo(0.5, 8.5);
+      } //now robot is back at its starting corner
       
       //TODO: DROP CAN (HANDLING)
       
@@ -454,66 +347,7 @@ public class project {
       while (Button.waitForAnyPress() != Button.ID_ESCAPE) {
       }
       System.exit(0); // exit program after esc pressed
-    }
-  
-  public static void toTunnel(int caseFlag, boolean isTV, NavigationWithCorr navWc ,DoubleLightLocalization dll , Odometer odo){ //There should be 4 cases. This version is only case 0
-	  if (isTV){
-		  navWc.navigateTo(1, 1, tunnel_LL_x, tunnel_LL_y - 1);
-		  turnToZero(odo);
-		  
-		  navWc.locaAtTunnel(tunnel_LL_x, tunnel_LL_y - 1);
-		  DoubleLightLocalization.reorientRobot(Math.PI/2);
-		  RIGHT_MOTOR.rotate(Navigation.convertDistance(WHEEL_RAD, 0.5 * TILE), true);
-		  LEFT_MOTOR.rotate(Navigation.convertDistance(WHEEL_RAD, 0.5 * TILE), false);
-		  
-		  DoubleLightLocalization.reorientRobot(-Math.PI/2);
-		  RIGHT_MOTOR.rotate(Navigation.convertDistance(WHEEL_RAD, 4 * TILE), true); // Going through!!
-		  LEFT_MOTOR.rotate(Navigation.convertDistance(WHEEL_RAD, 4 * TILE), false);
-		  
-		  navWc.locaAtTunnel(tunnel_UR_x, tunnel_UR_y + 1);
-		   
-		  navWc.navigateTo(tunnel_UR_x , tunnel_UR_y + 1,zone_LL_x, zone_LL_y);
-		
-		  
-		  
-		  
-	  }else{
-		  navWc.navigateTo(1, 1, tunnel_LL_x - 1, tunnel_LL_y);
-		  navWc.locaAtTunnel(tunnel_LL_x - 1, tunnel_LL_y);
-		  RIGHT_MOTOR.rotate(Navigation.convertDistance(WHEEL_RAD, 0.5 * TILE), true);
-		  LEFT_MOTOR.rotate(Navigation.convertDistance(WHEEL_RAD, 0.5 * TILE), false);
-		  
-		  
-		  DoubleLightLocalization.reorientRobot(Math.PI/2);
-		  RIGHT_MOTOR.rotate(Navigation.convertDistance(WHEEL_RAD, 4 * TILE), true);
-		  LEFT_MOTOR.rotate(Navigation.convertDistance(WHEEL_RAD, 4 * TILE), false);
-		  
-		  DoubleLightLocalization.reorientRobot(-Math.PI/2);
-		  navWc.locaAtTunnel(tunnel_UR_x + 1, tunnel_UR_y );
-		  navWc.navigateTo(tunnel_UR_x + 1, tunnel_UR_y, zone_LL_x, zone_LL_y);
-			
-		  
-	  }
-  }
-  
-  public static boolean isTunnelVertical(){
-	  if (Math.abs(tunnel_UR_x - tunnel_LL_x) == 2){
-		  return false;
-	  }else if (Math.abs(tunnel_UR_x - tunnel_LL_x) == 1){
-		  return true;
-	  }
-	  else{
-		  Button.waitForAnyPress();
-		  return false;
-		 
-	  }
-  }
-  public static void turnToZero(Odometer Odo){
-	  double theta = Odo.getXYT()[2];
-	  if (theta > 10){
-	    LEFT_MOTOR.rotate(-Navigation.convertAngle(project.WHEEL_RAD, project.TRACK, theta), true);
-	    RIGHT_MOTOR.rotate(Navigation.convertAngle(project.WHEEL_RAD, project.TRACK, theta), false);
-	  }
-  }
+    }  
+ 
   }
 
