@@ -28,8 +28,8 @@ public class Search extends Thread{
     private float[] usData;
     private static final float SPEED = 150; //TODO: TWEAK
     private static final float CAN = 30; //distance recorded by the us sensor at which there must be a can, TODO: TWEAK
- //   private static final double WHEEL_RAD = 2.15; //TODO: TWEAK
-  //  private static final double TRACK = 20; //TODO: TWEAK
+    private static final double WHEEL_RAD = 2.15; //TODO: TWEAK
+    private static final double TRACK = 13.5; //TODO: TWEAK
     private static final double CAN_CLOSE = 10; //closer distance at which there must be a can. robot must stop as to not hit can. TODO: TWEAK
     private float angleTacho; //tacho count for angle at which can detected
     private boolean isRed; //TODO: CHANGE WHEN NEEDED true if red team, false if green team
